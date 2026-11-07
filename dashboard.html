@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark"><title>Blokwerk</title>
+<style>
+:root{--bg:#f2f2f7;--glass:rgba(255,255,255,.58);--card:rgba(255,255,255,.8);--solid:#fff;--fill:rgba(120,120,128,.11);--fill2:rgba(120,120,128,.18);--ink:#1d1d1f;--mute:#6e6e73;--line:rgba(0,0,0,.08);--accent:#0071e3;--accent-ink:#fff;--green:#2fb550;--red:#ff3b30;--orange:#e08a00;--spec:rgba(255,255,255,.75);--shadow:0 1px 1px rgba(0,0,0,.03),0 12px 32px rgba(0,0,0,.07);--term:#17171b;--termink:#e6e6ea;--r:20px;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#000;--glass:rgba(40,40,44,.5);--card:rgba(30,30,33,.74);--solid:#1c1c1e;--fill:rgba(120,120,128,.22);--fill2:rgba(120,120,128,.32);--ink:#f5f5f7;--mute:#9b9ba1;--line:rgba(255,255,255,.1);--accent:#2997ff;--green:#32d74b;--orange:#ff9f0a;--spec:rgba(255,255,255,.16);--shadow:0 0 0 1px rgba(255,255,255,.04),0 14px 34px rgba(0,0,0,.45);--term:#0b0b0d;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#000;--glass:rgba(40,40,44,.5);--card:rgba(30,30,33,.74);--solid:#1c1c1e;--fill:rgba(120,120,128,.22);--fill2:rgba(120,120,128,.32);--ink:#f5f5f7;--mute:#9b9ba1;--line:rgba(255,255,255,.1);--accent:#2997ff;--green:#32d74b;--orange:#ff9f0a;--spec:rgba(255,255,255,.16);--shadow:0 0 0 1px rgba(255,255,255,.04),0 14px 34px rgba(0,0,0,.45);--term:#0b0b0d;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{height:100%}@supports(height:100dvh){html,body{height:100dvh}}body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+body::before{content:"";position:fixed;inset:-20%;z-index:-1;background:radial-gradient(40% 35% at 15% 10%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%),radial-gradient(35% 35% at 90% 85%,color-mix(in srgb,#af52de 18%,transparent),transparent 70%),radial-gradient(30% 30% at 80% 5%,color-mix(in srgb,var(--green) 12%,transparent),transparent 70%)}
+svg.ic{flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+button,input,select,textarea{font:inherit;color:inherit}
+#app{display:grid;grid-template-columns:248px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:100%;overflow:hidden}
+#side{display:flex;flex-direction:column;gap:4px;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:calc(18px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom));background:var(--glass);-webkit-backdrop-filter:saturate(190%) blur(28px);backdrop-filter:saturate(190%) blur(28px);border-right:1px solid var(--line);box-shadow:inset -1px 0 0 var(--spec);z-index:20}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650;font-size:18px;letter-spacing:-.02em;padding:2px 10px 18px}
+.brand .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#af52de));display:grid;place-items:center;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 12px color-mix(in srgb,var(--accent) 40%,transparent)}
+.nav{display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:12px;color:var(--ink);text-decoration:none;font-weight:500;font-size:14.5px;border:0;background:none;width:100%;text-align:left;cursor:pointer;transition:background .15s}
+.nav:hover{background:var(--fill)}.nav.on{background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 35%,transparent)}.nav svg{opacity:.85}.nav.on svg{opacity:1}
+.nav .dot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--orange)}
+.sp{flex:1;min-height:8px}.sfoot{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);padding-top:10px;margin-top:8px}
+#main{display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;overflow:hidden}
+#top{display:flex;align-items:center;gap:12px;padding:calc(14px + env(safe-area-inset-top)) 28px 10px;min-height:64px}
+#top h1{margin:0;font-size:26px;letter-spacing:-.03em;font-weight:680;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#menu{display:none}
+#page{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:6px 28px calc(40px + env(safe-area-inset-bottom));scroll-padding-top:env(safe-area-inset-top)}
+.pg{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.card{background:var(--card);border-radius:var(--r);padding:20px;box-shadow:var(--shadow),inset 0 1px 0 var(--spec);-webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);border:1px solid var(--line);min-width:0}
+.card h2{margin:0 0 4px;font-size:17px;font-weight:620;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.card .sub,.note{font-size:13px;color:var(--mute)}.note.warn{color:var(--orange)}.note.err{color:var(--red)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.row.sb{justify-content:space-between}.col{display:flex;flex-direction:column;gap:12px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;padding:0 16px;border:0;border-radius:999px;background:var(--fill);color:var(--ink);font-weight:550;font-size:14px;cursor:pointer;white-space:nowrap;transition:filter .15s,transform .1s,background .15s}
+.btn:hover{background:var(--fill2)}.btn:active{transform:scale(.97)}.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}.btn.primary:hover{filter:brightness(1.08);background:var(--accent)}.btn.danger{background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--red)}.btn.danger.solid{background:var(--red);color:#fff}
+.btn.sm{height:30px;padding:0 12px;font-size:13px}.btn.icon{width:34px;padding:0}.btn.sm.icon{width:30px}.btn.ghost{background:none}.btn.ghost:hover{background:var(--fill)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.input,select.input,textarea.input{height:38px;width:100%;padding:0 12px;border-radius:11px;border:1px solid transparent;background:var(--fill);font-size:14.5px;min-width:0}
+.input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent)}.input.bad{border-color:var(--red)}
+label.f{display:block;font-size:12.5px;font-weight:550;color:var(--mute);margin:0 0 5px}
+.sw{appearance:none;-webkit-appearance:none;flex:none;width:42px;height:25px;margin:0;border-radius:13px;background:var(--fill2);position:relative;cursor:pointer;transition:background .2s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}.sw:checked{background:var(--green)}.sw:checked::after{transform:translateX(17px)}.sw:disabled{opacity:.4;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:550;background:var(--fill);padding:4px 11px;border-radius:999px;white-space:nowrap}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--red)}.chip[data-s=online]::before{background:var(--green)}.chip[data-s=starting]::before,.chip[data-s=stopping]::before,.chip[data-s=installing]::before{background:var(--orange);animation:pulse 1.2s infinite}.chip.plain::before{display:none}
+@keyframes pulse{50%{opacity:.35}}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:7px;background:var(--fill);color:var(--mute);letter-spacing:.01em}.badge.g{background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}.badge.o{background:color-mix(in srgb,var(--orange) 18%,transparent);color:var(--orange)}.badge.r{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}.badge.b{background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)}
+.tile{background:var(--fill);border-radius:16px;padding:14px 16px;min-width:0}.tile b{display:block;font-size:24px;font-weight:650;letter-spacing:-.02em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tile span{font-size:12.5px;color:var(--mute)}
+.bar{height:5px;border-radius:3px;background:var(--fill2);margin-top:9px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .5s}.bar i.w{background:var(--orange)}.bar i.e{background:var(--red)}
+.seg{display:inline-flex;background:var(--fill);border-radius:10px;padding:2px;gap:2px;max-width:100%;overflow:auto}.seg button{border:0;background:none;height:30px;padding:0 13px;border-radius:8px;font-weight:550;font-size:13px;cursor:pointer;color:var(--mute);white-space:nowrap}.seg button.on{background:var(--solid);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;font-size:14px;background:color-mix(in srgb,var(--orange) 14%,transparent);color:var(--ink);border:1px solid color-mix(in srgb,var(--orange) 30%,transparent)}.alert.e{background:color-mix(in srgb,var(--red) 12%,transparent);border-color:color-mix(in srgb,var(--red) 30%,transparent)}.alert.i{background:color-mix(in srgb,var(--accent) 10%,transparent);border-color:color-mix(in srgb,var(--accent) 25%,transparent)}.alert svg{margin-top:2px;color:var(--orange)}.alert.e svg{color:var(--red)}.alert.i svg{color:var(--accent)}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl th{text-align:left;font-size:12px;font-weight:600;color:var(--mute);padding:6px 10px;white-space:nowrap}.tbl td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:middle}.tbl tr.rowh:hover td{background:var(--fill)}.tbl .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.tbl .act{text-align:right;white-space:nowrap}.tbl .nm{max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scroll{overflow:auto}.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}.mute{color:var(--mute)}.sm{font-size:13px}.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dz{border:1.5px dashed var(--fill2);border-radius:16px;padding:22px;text-align:center;color:var(--mute);transition:.15s;cursor:pointer}.dz.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent);color:var(--accent)}
+.cv{width:100%;height:150px;display:block}.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mute);margin-top:6px}.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px}.legend b{color:var(--ink);font-weight:600}
+#con{height:min(62vh,640px);min-height:260px;overflow:auto;background:var(--term);color:var(--termink);font:12.5px/1.55 ui-monospace,"SF Mono",Menlo,Consolas,monospace;padding:12px 14px;border-radius:14px;white-space:pre-wrap;word-break:break-word}
+#con div.w{color:#ffd60a}#con div.e{color:#ff6b61}#con div.u{color:#64b5ff}#con div.ok{color:#32d74b}#con div.d{color:#8e8e93}#con mark{background:#ffd60a;color:#000;border-radius:3px}#con .t{color:#8e8e93}
+.toasts{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;z-index:100;max-width:min(380px,calc(100vw - 36px))}
+.toast{display:flex;gap:10px;align-items:flex-start;background:var(--solid);border:1px solid var(--line);box-shadow:0 12px 36px rgba(0,0,0,.2);padding:12px 14px;border-radius:14px;font-size:14px;animation:tin .25s}.toast.e svg{color:var(--red)}.toast.ok svg{color:var(--green)}@keyframes tin{from{opacity:0;transform:translateY(10px)}}
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.35);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:grid;place-items:center;z-index:90;padding:16px;animation:fin .15s}@keyframes fin{from{opacity:0}}
+.modal{background:var(--solid);border-radius:22px;padding:22px;width:min(520px,100%);max-height:88vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.35);border:1px solid var(--line)}.modal.wide{width:min(860px,100%)}.modal h3{margin:0 0 6px;font-size:19px;letter-spacing:-.01em}.modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.ed{position:relative;height:min(62vh,620px);min-height:260px;border-radius:14px;background:var(--term);overflow:hidden}.ed pre,.ed textarea{position:absolute;inset:0;margin:0;padding:12px 14px;font:12.5px/1.55 ui-monospace,"SF Mono",Menlo,Consolas,monospace;white-space:pre;overflow:auto;tab-size:2;border:0;background:none}.ed pre{color:var(--termink);pointer-events:none}.ed textarea{color:transparent;caret-color:#fff;resize:none;outline:none;-webkit-text-fill-color:transparent}.ed textarea::selection{background:rgba(41,151,255,.4);-webkit-text-fill-color:transparent}
+.ed i{font-style:normal}.ed .k{color:#64b5ff}.ed .s{color:#a5e075}.ed .n{color:#ffb86b}.ed .b{color:#d09cff}.ed .c{color:#8e8e93}.ed .p{color:#ff8fa3}
+.crumbs{display:flex;align-items:center;gap:2px;flex-wrap:wrap;font-size:14px}.crumbs button{border:0;background:none;color:var(--accent);cursor:pointer;padding:3px 6px;border-radius:7px;font-weight:550}.crumbs button:hover{background:var(--fill)}.crumbs span{color:var(--mute)}
+.cfgnav{display:flex;flex-direction:column;gap:2px;max-height:68vh;overflow:auto}.cfgnav button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:10px;cursor:pointer;font-size:14px;display:flex;gap:8px;align-items:center}.cfgnav button:hover{background:var(--fill)}.cfgnav button.on{background:var(--accent);color:var(--accent-ink)}.cfgnav h4{margin:12px 10px 4px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);font-weight:650}
+.fld{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:6px 24px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}.fld:first-of-type{border-top:0}.fld b{font-weight:600;font-size:14px}.fld .d{font-size:12.5px;color:var(--mute);grid-column:1}.fld .e{grid-column:1/-1;font-size:12.5px;color:var(--red)}.fld .ctl{grid-row:1/3;grid-column:2;justify-self:end;width:100%}.fld .ctl .sw{float:right}
+.wiz{max-width:640px;margin:0 auto;padding-top:8px}
+.login{position:fixed;inset:0;display:grid;place-items:center;padding:20px;z-index:200;background:var(--bg)}.login::before{content:"";position:absolute;inset:0;background:radial-gradient(40% 40% at 20% 15%,color-mix(in srgb,var(--accent) 26%,transparent),transparent 70%),radial-gradient(40% 40% at 85% 85%,color-mix(in srgb,#af52de 22%,transparent),transparent 70%)}.login .card{position:relative;width:min(400px,100%);padding:30px}
+.pbar{position:fixed;left:0;right:0;top:0;height:3px;z-index:300;background:transparent}.pbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.sk{display:flex;gap:6px;align-items:center}
+@media(max-width:1000px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:860px){#app{grid-template-columns:1fr}#side{position:fixed;left:0;top:0;bottom:0;width:272px;transform:translateX(-102%);transition:transform .25s;box-shadow:0 0 60px rgba(0,0,0,.3);background:var(--solid)}#side.open{transform:none}#menu{display:inline-flex}#top{padding:calc(10px + env(safe-area-inset-top)) 16px 6px}#top h1{font-size:22px}#page{padding:6px 14px calc(40px + env(safe-area-inset-bottom))}.g2,.g3{grid-template-columns:1fr}.fld{grid-template-columns:1fr}.fld .ctl{grid-row:auto;grid-column:1}.card{padding:16px;border-radius:18px}.tbl .hm{display:none}.scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:15}}
+@media(max-width:520px){.g4{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tile b{font-size:20px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body>
+<div id="root"></div><div class="toasts" id="toasts"></div><div class="pbar" id="pbar" hidden><i></i></div>
+<script nonce="%NONCE%">
+'use strict';
+const NS='http://www.w3.org/2000/svg',$=(s,r=document)=>r.querySelector(s);
+const IC={
+layout:'<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+terminal:'<polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/>',
+package:'<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+folder:'<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+archive:'<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
+globe:'<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+sliders:'<line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/>',
+settings:'<path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>',
+play:'<polygon points="6 3 20 12 6 21 6 3"/>',stop:'<rect width="14" height="14" x="5" y="5" rx="2"/>',
+rotate:'<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>',
+power:'<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/>',
+upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+trash:'<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>',
+warn:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+check:'<path d="M20 6 9 17l-5-5"/>',x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',edit:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+menu:'<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>',
+up:'<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+cpu:'<rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/>',
+clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+fplus:'<path d="M12 10v6"/><path d="M9 13h6"/><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+chev:'<path d="m9 18 6-6-6-6"/>',copy:'<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+bolt:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>'};
+const ic=(n,s=18)=>{const e=document.createElementNS(NS,'svg');e.setAttribute('viewBox','0 0 24 24');e.setAttribute('width',s);e.setAttribute('height',s);e.setAttribute('class','ic');e.setAttribute('aria-hidden','true');e.innerHTML=IC[n]||'';return e};
+function h(t,a,...c){const e=document.createElement(t);if(a)for(const k in a){const v=a[k];if(v==null||v===false)continue;
+ if(k==='class')e.className=v;else if(k==='style')e.style.cssText=v;else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);else if(['value','checked','disabled','indeterminate','selected'].includes(k))e[k]=v;else e.setAttribute(k,v===true?'':v)}
+ const add=x=>{if(x==null||x===false)return;if(Array.isArray(x))x.forEach(add);else e.append(x.nodeType?x:document.createTextNode(String(x)))};c.forEach(add);return e}
+const btn=(label,o={})=>h('button',{class:'btn '+(o.k||'')+(o.sm?' sm':'')+(o.i&&!label?' icon':''),type:'button',onclick:o.on,disabled:o.dis,title:o.title||(label?null:o.label)},o.i?ic(o.i,o.sm?15:16):null,label||null);
+const sw=(on,fn,dis)=>h('input',{type:'checkbox',class:'sw',checked:!!on,disabled:dis,onchange:e=>fn(e.target.checked,e.target)});
+const clear=e=>{while(e.firstChild)e.removeChild(e.firstChild);return e};
+const fmtB=n=>n==null?'–':n<1024?n+' B':n<1048576?(n/1024).toFixed(0)+' KB':n<1073741824?(n/1048576).toFixed(1)+' MB':(n/1073741824).toFixed(2)+' GB';
+const fmtMB=m=>m==null?'–':m>=1024?(m/1024).toFixed(1)+' GB':Math.round(m)+' MB';
+const fmtRate=b=>b==null?'–':b<1024?b+' B/s':b<1048576?(b/1024).toFixed(0)+' KB/s':(b/1048576).toFixed(1)+' MB/s';
+const fmtDur=t=>{if(!t)return '–';const d=Math.floor(t/86400),hh=Math.floor(t%86400/3600),m=Math.floor(t%3600/60);return (d?d+'d ':'')+(hh||d?hh+'u ':'')+m+'m'+(t<3600?' '+t%60+'s':'')};
+const fmtDate=t=>t?new Date(t).toLocaleString('nl-NL',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'–';
+const pad=n=>String(n).padStart(2,'0');
+const copy=t=>{navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>toast('Gekopieerd','ok'),()=>{})};
+let csrf='',st={status:'setup',players:[],logs:[]},hooks={},theme='auto';
+try{theme=localStorage.getItem('bw.theme')||'auto'}catch{}
+const applyTheme=()=>{if(theme==='auto')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=theme};applyTheme();
+function toast(m,k){const t=h('div',{class:'toast '+(k||'')},ic(k==='e'?'warn':k==='ok'?'check':'info'),h('div',null,m));$('#toasts').append(t);setTimeout(()=>t.remove(),k==='e'?7000:4000)}
+async function api(p,body){const get=body===undefined;let r;try{r=await fetch('/api/'+p,{method:get?'GET':'POST',headers:get?{}:{'Content-Type':'application/json','X-Blokwerk':csrf||'1'},body:get?undefined:JSON.stringify(body)})}catch{throw new Error('Geen verbinding met Blokwerk')}
+ let d={};try{d=await r.json()}catch{}
+ if(r.status===401&&d.login&&p.indexOf('auth')!==0){showLogin();throw new Error('Niet ingelogd')}
+ if(!r.ok){const e=new Error(d.error||'Fout '+r.status);e.fields=d.fields;e.status=r.status;throw e}return d}
+const act=async(p,b,okMsg)=>{try{const r=await api(p,b);if(okMsg)toast(okMsg,'ok');return r}catch(e){toast(e.message,'e');return null}};
+function upload(p,file,onp){return new Promise((ok,no)=>{const x=new XMLHttpRequest();x.open('POST','/api/'+p);x.setRequestHeader('X-Blokwerk',csrf);x.setRequestHeader('Content-Type','application/octet-stream');
+ x.upload.onprogress=e=>{if(e.lengthComputable&&onp)onp(e.loaded/e.total)};x.onload=()=>{let d={};try{d=JSON.parse(x.responseText)}catch{}x.status<300?ok(d):no(Object.assign(new Error(d.error||'Upload mislukt ('+x.status+')'),{status:x.status}))};x.onerror=()=>no(new Error('Verbinding verbroken'));x.send(file)})}
+function modal(title,body,acts,o={}){const close=()=>{if(ov.isConnected){ov.remove();o.onclose&&o.onclose()}};const bs=(acts||[]).map(a=>btn(a.label,{k:a.k,on:async e=>{if(a.on){const r=await a.on(e.currentTarget,close);if(r===false)return}if(!a.keep)close()}}));
+ const ov=h('div',{class:'ovl',onclick:e=>{if(e.target===ov&&!o.sticky)close()}},h('div',{class:'modal'+(o.wide?' wide':''),role:'dialog','aria-modal':'true'},h('h3',null,title),body,bs.length?h('div',{class:'acts'},bs):null));
+ document.addEventListener('keydown',function k(e){if(!ov.isConnected)return document.removeEventListener('keydown',k);if(e.key==='Escape'&&!o.sticky)close()});document.body.append(ov);const f=$('input,textarea',ov);if(f&&o.focus!==false)f.focus();return close}
+const ask=(title,text,o={})=>new Promise(res=>{let inp=null;const body=h('div',{class:'col'},h('div',{class:'sm',style:'color:var(--mute);white-space:pre-line'},text),o.type?(inp=h('input',{class:'input',placeholder:o.type,autocomplete:'off'})):null);
+ let done=false;const fin=v=>{if(!done){done=true;res(v)}};
+ const cl=modal(title,body,[{label:'Annuleren',on:()=>{fin(false)}},{label:o.ok||'Bevestigen',k:o.danger?'danger solid':'primary',keep:!!o.type,on:(b,c)=>{if(o.type&&inp.value!==o.type){inp.classList.add('bad');return false}fin(inp?inp.value:true);if(o.type)c()}}],{onclose:()=>fin(false)});
+ });
+const input=(o={})=>{const e=h('input',{class:'input',type:o.type||'text',placeholder:o.ph||'',value:o.v||'',autocomplete:o.ac||'off',min:o.min,max:o.max,maxlength:o.ml});if(o.on)e.addEventListener('input',o.on);return e};
+const field=(l,e,n)=>h('div',null,h('label',{class:'f'},l),e,n?h('div',{class:'note'},n):null);
+const sel=(opts,v,fn)=>{const s=h('select',{class:'input',onchange:e=>fn(e.target.value)},opts.map(o=>{const[val,lab]=Array.isArray(o)?o:[o,o];return h('option',{value:val,selected:val===v},lab)}));return s};
+const seg=(opts,v,fn)=>{const w=h('div',{class:'seg'});const draw=cur=>{clear(w);opts.forEach(([val,lab])=>w.append(h('button',{class:val===cur?'on':'',type:'button',onclick:()=>{draw(val);fn(val)}},lab)))};draw(v);return w};
+// ---- pagina's
+const PAGES={overview:['Overzicht','layout'],console:['Console','terminal'],mods:['Mods & Plugins','package'],players:['Spelers','users'],files:['Bestanden','folder'],backups:['Back-ups','archive'],worlds:['Werelden','globe'],config:['Configuratie','sliders'],settings:['Instellingen','settings']};
+const R={};
+function route(){const k=(location.hash.replace(/^#\/?/,'')||'overview').split('/')[0],p=PAGES[k]?k:'overview';return p}
+function go(){if(!st.cfg||!$('#page'))return;const p=route();hooks.destroy&&hooks.destroy();hooks={};const pg=$('#page');clear(pg);pg.scrollTop=0;$('#top h1').textContent=PAGES[p][0];
+ document.querySelectorAll('.nav[data-p]').forEach(n=>n.classList.toggle('on',n.dataset.p===p));$('#side').classList.remove('open');const sc=$('.scrim');if(sc)sc.remove();
+ try{pg.append(R[p]())}catch(e){console.error(e);pg.append(h('div',{class:'alert e'},ic('warn'),'Deze pagina kon niet geladen worden: '+e.message))}}
+function statusText(s){return {setup:'Niet geïnstalleerd',installing:'Installeren…',offline:'Offline',starting:'Opstarten…',online:'Online',stopping:'Stoppen…'}[s]||s}
+function shell(){const root=clear($('#root'));
+ const nav=Object.entries(PAGES).map(([k,[l,i]])=>h('a',{class:'nav',href:'#/'+k,'data-p':k},ic(i),l));
+ const side=h('aside',{id:'side'},h('div',{class:'brand'},h('div',{class:'logo'},ic('package',17)),'Blokwerk'),nav,h('div',{class:'sp'}),
+  h('div',{class:'sfoot'},h('button',{class:'nav',type:'button',id:'thm',onclick:()=>{theme=theme==='dark'?'light':theme==='light'?'auto':'dark';try{localStorage.setItem('bw.theme',theme)}catch{}applyTheme();thmLabel()}},ic('sun'),h('span')),
+   h('button',{class:'nav',type:'button',onclick:async()=>{await act('auth/logout',{});location.reload()}},ic('logout'),'Uitloggen')));
+ const top=h('div',{id:'top'},h('button',{class:'btn icon ghost',id:'menu',type:'button','aria-label':'Menu',onclick:()=>{side.classList.add('open');const s=h('div',{class:'scrim',onclick:()=>{side.classList.remove('open');s.remove()}});document.body.append(s)}},ic('menu',20)),h('h1'),h('span',{class:'chip plain',id:'busy',hidden:true}),h('span',{class:'chip',id:'chip','data-s':'offline'},'…'));
+ root.append(h('div',{id:'app'},side,h('div',{id:'main'},top,h('div',{id:'page'}))));thmLabel();renderChrome()}
+function thmLabel(){const b=$('#thm');if(!b)return;b.firstChild.replaceWith(ic(theme==='dark'?'moon':'sun'));b.lastChild.textContent='Thema: '+({auto:'automatisch',light:'licht',dark:'donker'}[theme])}
+function renderChrome(){const c=$('#chip');if(!c)return;c.dataset.s=st.status;c.textContent=statusText(st.status);const b=$('#busy');if(b){b.hidden=!st.busy;b.textContent=typeof st.busy==='string'?st.busy+'…':'Bezig…'}
+ const dot=document.querySelector('.nav[data-p=overview] .dot');const al=(st.alerts||[]).length;if(al&&!dot)document.querySelector('.nav[data-p=overview]').append(h('span',{class:'dot'}));if(!al&&dot)dot.remove()}
+// ---- verbinding met de server (SSE)
+let es=null,metrics=[],conLogs=[];
+function connect(){if(es)es.close();es=new EventSource('/events');
+ es.addEventListener('state',e=>{const was=st.cfg,s=JSON.parse(e.data);Object.assign(st,s);if(!!was!==!!st.cfg){boot();return}renderChrome();hooks.state&&hooks.state()});
+ es.addEventListener('log',e=>{const l=JSON.parse(e.data);conLogs.push(l);if(conLogs.length>2000)conLogs.shift();hooks.log&&hooks.log(l)});
+ es.addEventListener('metrics',e=>{const d=JSON.parse(e.data);st.metrics=d.s;st.alerts=d.alerts;st.uptime=d.uptime;metrics.push(d.s);if(metrics.length>400)metrics.shift();renderChrome();hooks.metrics&&hooks.metrics(d)});
+ es.addEventListener('progress',e=>{const p=JSON.parse(e.data),b=$('#pbar');b.hidden=false;$('i',b).style.width=p.pct+'%';st.progress=p;hooks.progress&&hooks.progress(p);if(p.pct>=100)setTimeout(()=>{b.hidden=true},1200)});
+ es.addEventListener('job',e=>{const j=JSON.parse(e.data);if(j.state==='done'){toast(j.label+' is klaar.','ok');if(j.result&&j.result.trigger==='download'&&j.result.id)location.href='/api/backups/download?id='+encodeURIComponent(j.result.id)}else if(j.state==='error')toast(j.label+' mislukt: '+j.error,'e');hooks.job&&hooks.job(j)});
+ for(const k of['players','backups','worlds'])es.addEventListener(k,()=>{hooks[k]&&hooks[k]()});
+ es.addEventListener('crash',e=>{toast('De server is gecrasht. Er is een crashlog opgeslagen.','e');hooks.crash&&hooks.crash()})}
+// ---- inloggen
+function showLogin(setup){const old=$('.login');if(old)old.remove();const err=h('div',{class:'note err'});
+ const pw=input({type:'password',ph:'Wachtwoord',ac:setup?'new-password':'current-password'}),pw2=input({type:'password',ph:'Herhaal wachtwoord',ac:'new-password'}),code=input({ph:'Setup-code uit het terminalvenster',ac:'off'});
+ const go1=async()=>{err.textContent='';if(setup&&pw.value!==pw2.value){err.textContent='De wachtwoorden zijn niet gelijk.';return}
+  try{const r=await api(setup?'auth/setup':'auth/login',setup?{code:code.value.trim(),password:pw.value}:{password:pw.value});csrf=r.csrf;$('.login').remove();start()}catch(e){err.textContent=e.message}};
+ const f=h('div',{class:'login'},h('div',{class:'card col'},h('div',{class:'brand',style:'padding:0 0 4px'},h('div',{class:'logo'},ic('package',17)),'Blokwerk'),
+  h('div',null,h('b',null,setup?'Welkom! Kies een wachtwoord':'Inloggen'),h('div',{class:'note'},setup?'Dit beschermt je dashboard. Minstens 8 tekens.':'Je dashboard is beveiligd met een wachtwoord.')),
+  setup?code:null,pw,setup?pw2:null,err,btn(setup?'Wachtwoord instellen':'Inloggen',{k:'primary',on:go1})));
+ f.addEventListener('keydown',e=>{if(e.key==='Enter')go1()});document.body.append(f);(setup?code:pw).focus()}
+async function init(){let a;try{a=await (await fetch('/api/auth')).json()}catch{document.body.textContent='Blokwerk is niet bereikbaar.';return}
+ if(a.authed){csrf=a.csrf;start()}else showLogin(a.setup)}
+async function start(){try{st=await api('state')}catch{return}conLogs=st.logs||[];try{metrics=(await api('metrics?range=1800')).samples}catch{}connect();boot()}
+function boot(){if(st.cfg){if(!$('#page'))shell();else renderChrome();go()}else wizard()}
+window.addEventListener('hashchange',go);
+window.addEventListener('beforeunload',e=>{if(hooks.dirty&&hooks.dirty()){e.preventDefault();e.returnValue=''}});
+// ---- grafieken (canvas, geen dependencies)
+function chartCard(title,series,o){
+ const cv=h('canvas',{class:'cv'}),lg=h('div',{class:'legend'}),el=h('div',{class:'card'},h('h2',null,title),cv,lg);let hov=null;
+ const data=()=>metrics.filter(s=>s.t>=Date.now()-o.range()*1000);
+ const legend=p=>{clear(lg);for(const s of series)lg.append(h('span',null,h('i',{style:'background:'+s.c}),s.n+' ',h('b',null,p&&p[s.k]!=null?s.f(p[s.k]):'–')))};
+ function draw(){const pts=data(),w=cv.clientWidth,H=cv.clientHeight;if(!w||!H)return;const dpr=window.devicePixelRatio||1;cv.width=w*dpr;cv.height=H*dpr;const g=cv.getContext&&cv.getContext('2d');if(!g)return;g.scale(dpr,dpr);
+  const cs=getComputedStyle(document.documentElement),mute=cs.getPropertyValue('--mute').trim()||'#888',line=cs.getPropertyValue('--line').trim()||'#ddd';
+  const t1=Date.now(),t0=t1-o.range()*1000,L=54,B=16,T=6,pw=w-L-6,ph=H-B-T,vals=series.flatMap(s=>pts.map(p=>p[s.k]).filter(v=>v!=null)),max=o.max||Math.max(1,...vals)*1.2;
+  g.font='11px -apple-system,system-ui,sans-serif';g.fillStyle=mute;g.strokeStyle=line;g.lineWidth=1;
+  for(let i=0;i<=2;i++){const y=T+ph-ph*i/2;g.beginPath();g.moveTo(L,y);g.lineTo(w-4,y);g.stroke();g.textAlign='right';g.fillText(o.axis(max*i/2),L-6,y+4)}
+  g.textAlign='left';g.fillText(Math.round(o.range()/60)+' min geleden',L,H-2);g.textAlign='right';g.fillText('nu',w-4,H-2);
+  if(!pts.length){g.textAlign='center';g.fillText('Nog geen gegevens',w/2,H/2);legend(null);return}
+  const X=p=>L+(p.t-t0)/(t1-t0)*pw,Y=v=>T+ph-Math.min(v,max)/max*ph;
+  series.forEach((s,si)=>{g.beginPath();let first=null,last=null,started=false;for(const p of pts){const v=p[s.k];if(v==null){started=false;continue}const x=X(p),y=Y(v);if(!started){g.moveTo(x,y);started=true;first=first??x}else g.lineTo(x,y);last=x}
+   g.strokeStyle=s.c;g.lineWidth=2;g.lineJoin='round';g.stroke();if(si===0&&first!=null){g.lineTo(last,T+ph);g.lineTo(first,T+ph);g.closePath();const gr=g.createLinearGradient(0,T,0,T+ph);gr.addColorStop(0,s.c+'55');gr.addColorStop(1,s.c+'00');g.fillStyle=gr;g.fill()}});
+  let hp=pts[pts.length-1];if(hov!=null){const t=t0+(hov-L)/pw*(t1-t0);hp=pts.reduce((a,b)=>Math.abs(b.t-t)<Math.abs(a.t-t)?b:a);g.strokeStyle=mute;g.lineWidth=1;g.beginPath();g.moveTo(X(hp),T);g.lineTo(X(hp),T+ph);g.stroke()}legend(hp)}
+ cv.addEventListener('mousemove',e=>{hov=e.offsetX;draw()});cv.addEventListener('mouseleave',()=>{hov=null;draw()});
+ return {el,draw}}
+const tile=(l,x)=>{const b=h('b',null,'–'),s=h('span',null,l),bar=x?h('i'):null,sub=h('span',{style:'display:block;margin-top:2px'});const el=h('div',{class:'tile'},b,s,x?h('div',{class:'bar'},bar):null,sub);
+ return {el,set(v,pct,sb,cls){b.textContent=v;if(bar){bar.style.width=Math.max(0,Math.min(100,pct||0))+'%';bar.className=cls||''}sub.textContent=sb||''}}};
+R.overview=()=>{
+ let rng=300;const run=()=>st.status==='online'||st.status==='starting';
+ const bS=btn('Start',{k:'primary',i:'play',on:()=>act('start',{})}),bR=btn('Herstart',{i:'rotate',on:async()=>{if(await ask('Server herstarten?','Spelers worden losgekoppeld. De wereld wordt netjes opgeslagen.',{ok:'Herstarten'}))act('restart',{})}}),
+  bT=btn('Stop',{i:'stop',on:async()=>{if(await ask('Server stoppen?','De server slaat de wereld op en sluit af.',{ok:'Stoppen'}))act('stop',{})}}),
+  bF=btn('Geforceerd stoppen',{k:'danger',i:'power',on:async()=>{if(await ask('Geforceerd stoppen?','Het serverproces wordt direct beëindigd zonder op te slaan. Recente voortgang in de wereld kan verloren gaan. Gebruik dit alleen als de server vastloopt.',{ok:'Forceer stop',danger:true}))act('forcestop',{confirm:true})}});
+ const stTxt=h('div',{style:'font-size:30px;font-weight:680;letter-spacing:-.03em'}),stSub=h('div',{class:'note'}),alerts=h('div',{class:'col'});
+ const T={pl:tile('Spelers',1),up:tile('Uptime'),tps:tile('TPS (20 = perfect)',1),ver:tile('Server'),cpu:tile('Processor',1),ram:tile('Geheugen systeem',1),heap:tile('Java-heap',1),disk:tile('Schijf',1),net:tile('Netwerk'),temp:tile('CPU-temperatuur')};
+ const C={cpu:chartCard('Processor',[{k:'cpu',n:'Systeem',c:'#0a84ff',f:v=>v.toFixed(0)+'%'},{k:'pcpu',n:'Server',c:'#30d158',f:v=>v.toFixed(0)+'%'}],{range:()=>rng,max:100,axis:v=>Math.round(v)+'%'}),
+  ram:chartCard('Geheugen',[{k:'mem',n:'Systeem',c:'#0a84ff',f:fmtMB},{k:'prss',n:'Serverproces',c:'#30d158',f:fmtMB},{k:'heapU',n:'Java-heap',c:'#ff9f0a',f:fmtMB}],{range:()=>rng,axis:fmtMB}),
+  net:chartCard('Netwerk',[{k:'down',n:'Download',c:'#0a84ff',f:fmtRate},{k:'up',n:'Upload',c:'#bf5af2',f:fmtRate}],{range:()=>rng,axis:fmtRate}),
+  tps:chartCard('TPS en spelers',[{k:'tps',n:'TPS',c:'#30d158',f:v=>v.toFixed(1)},{k:'players',n:'Spelers',c:'#ff9f0a',f:v=>v}],{range:()=>rng,axis:v=>Math.round(v)})};
+ const crash=h('div',{class:'col'});
+ async function loadCrash(){try{const r=await api('crashes');clear(crash);if(!r.items.length)crash.append(h('div',{class:'note'},'Geen crashes geregistreerd.'));
+  for(const c of r.items.slice(0,6))crash.append(h('div',{class:'row sb'},h('div',null,h('div',{class:'sm'},fmtDate(c.t)),h('div',{class:'note'},c.name+' · '+fmtB(c.size))),btn('Bekijk',{sm:true,on:async()=>{const d=await act('crashes/read?name='+encodeURIComponent(c.name));if(d)modal('Crashlog',h('textarea',{class:'input mono',readonly:true,style:'height:50vh;padding:10px;font-size:12px;white-space:pre'},d.content),[{label:'Sluiten'}],{wide:true})}})))}catch{}}
+ const upd=()=>{const c=st.cfg,m=st.metrics||{},on=run();stTxt.textContent=statusText(st.status);stSub.textContent=c?c.type+' '+c.version+' · localhost:'+c.port:'';
+  bS.disabled=st.status!=='offline'||!!st.busy;bT.disabled=!on||typeof st.busy==='string';bR.disabled=st.status!=='online'||!!st.busy;bF.disabled=!(on||st.status==='stopping');
+  clear(alerts);for(const a of st.alerts||[])alerts.append(h('div',{class:'alert '+(a.l==='e'?'e':'')},ic('warn'),a.m));
+  T.pl.set(st.players.length+(c?' / '+c.max:''),c?st.players.length/c.max*100:0);T.up.set(on?fmtDur(st.uptime):'–');T.ver.set(c?c.version:'–');T.ver.el.lastChild.textContent=c?c.type:'';
+  const tp=m.tps;T.tps.set(tp==null?'–':tp.toFixed(1),tp==null?0:tp/20*100,tp==null&&on?'Wordt gemeten…':'',tp!=null&&tp<15?'e':tp!=null&&tp<18?'w':'');
+  T.cpu.set(m.cpu==null?'–':m.cpu.toFixed(0)+'%',m.cpu,m.pcpu!=null?'Server: '+m.pcpu.toFixed(0)+'%':'',m.cpu>90?'e':m.cpu>75?'w':'');
+  T.ram.set(m.mem!=null?fmtMB(m.mem)+' / '+fmtMB(m.memT):'–',m.mem/m.memT*100,m.prss?'Server: '+fmtMB(m.prss):'',m.mem/m.memT>.92?'e':m.mem/m.memT>.8?'w':'');
+  T.heap.set(m.heapU!=null?fmtMB(m.heapU)+' / '+fmtMB(m.heapT):(on?'Wacht op eerste GC':'–'),m.heapU?m.heapU/m.heapT*100:0,'',m.heapU/m.heapT>.9?'e':m.heapU/m.heapT>.75?'w':'');
+  T.disk.set(m.disk!=null?fmtMB(m.disk)+' / '+fmtMB(m.diskT):'–',m.disk/m.diskT*100,m.srv?'Serverbestanden: '+fmtMB(m.srv):'',m.disk/m.diskT>.9?'e':m.disk/m.diskT>.8?'w':'');
+  T.net.set(m.down!=null?'↓ '+fmtRate(m.down):'–',0,m.up!=null?'↑ '+fmtRate(m.up):'');T.temp.set(m.temp!=null?m.temp.toFixed(0)+' °C':'Niet beschikbaar')};
+ hooks.state=upd;hooks.metrics=()=>{upd();for(const k in C)C[k].draw()};hooks.crash=loadCrash;const rs=()=>{for(const k in C)C[k].draw()};window.addEventListener('resize',rs);hooks.destroy=()=>window.removeEventListener('resize',rs);
+ const el=h('div',{class:'pg'},h('div',{class:'card row sb'},h('div',null,stTxt,stSub),h('div',{class:'row'},bS,bR,bT,bF)),alerts,
+  h('div',{class:'g4'},T.pl.el,T.up.el,T.tps.el,T.ver.el),h('div',{class:'g4'},T.cpu.el,T.ram.el,T.heap.el,T.disk.el),h('div',{class:'g4'},T.net.el,T.temp.el),
+  h('div',{class:'row sb'},h('h2',{style:'margin:0;font-size:17px'},'Prestaties'),seg([[60,'1 min'],[300,'5 min'],[1800,'30 min']],rng,v=>{rng=+v;rs()})),
+  h('div',{class:'g2'},C.cpu.el,C.ram.el,C.net.el,C.tps.el),h('div',{class:'card'},h('h2',null,ic('warn',17),'Crashlogs'),h('div',{class:'sub',style:'margin-bottom:10px'},'Bij een crash slaat Blokwerk automatisch de laatste consoleregels op.'),crash));
+ upd();loadCrash();requestAnimationFrame(rs);return el};
+// ---- console
+const hlText=(t,q)=>{if(!q)return t;const out=[],lo=t.toLowerCase();let i=0,j;while((j=lo.indexOf(q,i))>=0){out.push(t.slice(i,j),h('mark',null,t.slice(j,j+q.length)));i=j+q.length}out.push(t.slice(i));return out};
+R.console=()=>{
+ let q='',auto=true,lv={i:1,w:1,e:1},hist=[],hi=-1;try{hist=JSON.parse(localStorage.getItem('bw.hist')||'[]')}catch{}
+ const con=h('div',{id:'con',role:'log','aria-live':'off',tabindex:0}),stat=h('span',{class:'note'}),cnt=h('span',{class:'note'});
+ const vis=l=>{const k=l.c==='w'?'w':l.c==='e'?'e':'i';return lv[k]&&(!q||l.m.toLowerCase().includes(q))};
+ const mk=l=>h('div',{class:l.c},h('span',{class:'t'},'['+l.t+'] '),hlText(l.m,q));
+ const bottom=()=>{if(auto)con.scrollTop=con.scrollHeight};
+ const full=()=>{clear(con);const fr=document.createDocumentFragment();let n=0;for(const l of conLogs)if(vis(l)){fr.append(mk(l));n++}con.append(fr);cnt.textContent=n+' regels';bottom()};
+ hooks.log=l=>{if(!vis(l))return;con.append(mk(l));while(con.childElementCount>2000)con.firstChild.remove();bottom()};
+ con.addEventListener('scroll',()=>{const nb=con.scrollHeight-con.scrollTop-con.clientHeight<30;if(!nb&&auto){auto=false;as.checked=false}else if(nb&&!auto){auto=true;as.checked=true}});
+ const as=sw(true,v=>{auto=v;bottom()}),inp=h('input',{class:'input mono',placeholder:'Typ een commando, bijv. list',autocomplete:'off',spellcheck:false,maxlength:256,style:'font-size:13.5px'}),sendB=btn('Stuur',{k:'primary',i:'bolt'});
+ async function send(c){c=c.trim();if(!c)return;stat.className='note';stat.textContent='Verzenden…';try{await api('cmd',{cmd:c});const d=new Date();stat.textContent='Verzonden om '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())+': '+c.slice(0,40);if(hist[0]!==c){hist.unshift(c);hist=hist.slice(0,100);try{localStorage.setItem('bw.hist',JSON.stringify(hist))}catch{}}}catch(e){stat.className='note err';stat.textContent='Mislukt: '+e.message}hi=-1}
+ inp.addEventListener('keydown',e=>{if(e.key==='Enter'){send(inp.value);inp.value=''}else if(e.key==='ArrowUp'){e.preventDefault();if(hi<hist.length-1){hi++;inp.value=hist[hi]}}else if(e.key==='ArrowDown'){e.preventDefault();if(hi>0){hi--;inp.value=hist[hi]}else{hi=-1;inp.value=''}}});
+ sendB.addEventListener('click',()=>{send(inp.value);inp.value='';inp.focus()});
+ const upd=()=>{const on=st.status==='online'||st.status==='starting';inp.disabled=sendB.disabled=!on;inp.placeholder=on?'Typ een commando, bijv. list  (↑ ↓ voor geschiedenis)':'Start de server om commando\'s te sturen'};hooks.state=upd;
+ const chip=(k,l)=>h('label',{class:'chip plain sm',style:'cursor:pointer;gap:6px'},h('input',{type:'checkbox',checked:true,onchange:e=>{lv[k]=e.target.checked?1:0;full()}}),l);
+ const quick=['/list','/tps','/time query daytime','/weather clear','/save-all','/whitelist list'];
+ const el=h('div',{class:'pg'},h('div',{class:'card col'},
+  h('div',{class:'row'},h('div',{style:'position:relative;flex:1;min-width:180px'},input({ph:'Zoek in de console',on:e=>{q=e.target.value.toLowerCase().trim();full()}})),chip('i','Info'),chip('w','Waarschuwingen'),chip('e','Fouten'),
+   h('label',{class:'row sm',style:'gap:8px;cursor:pointer'},'Automatisch scrollen',as),btn('Wissen',{sm:true,i:'trash',title:'Wist alleen de weergave in je browser',on:()=>{conLogs.length=0;full()}})),
+  con,h('div',{class:'row sb'},cnt,stat),h('div',{class:'row'},inp,sendB),h('div',{class:'row'},h('span',{class:'note'},'Snelle commando\'s:'),quick.map(c=>btn(c,{sm:true,on:()=>send(c)})))));
+ full();upd();setTimeout(()=>{con.scrollTop=con.scrollHeight},0);return el};
+// ---- mods & plugins
+const LOADER={bukkit:'Bukkit/Paper',fabric:'Fabric',quilt:'Quilt',forge:'Forge',neoforge:'NeoForge',unknown:'Onbekend'};
+R.mods=()=>{
+ let data={items:[]},q='',f='all',sel=new Set(),dirty=false;const list=h('div',{class:'col'}),queue=h('div',{class:'col'}),bar=h('div',{class:'col'});
+ const load=async()=>{try{data=await api('mods');draw()}catch(e){toast(e.message,'e')}};
+ const keep=it=>{const s=(it.info.name||'')+' '+it.file+' '+(it.info.id||'');return(!q||s.toLowerCase().includes(q))&&(f==='all'||(f==='on'&&it.enabled)||(f==='off'&&!it.enabled)||(f==='warn'&&it.warn.length)||(f==='dup'&&it.dup))};
+ const key=it=>it.dir+'/'+it.file;
+ async function del(items){if(!items.length)return;if(!await ask(items.length>1?items.length+' bestanden verwijderen?':'Bestand verwijderen?',items.map(i=>i.file).join('\n')+'\n\nDit kan niet ongedaan gemaakt worden.',{ok:'Verwijderen',danger:true}))return;
+  const r=await act('mods/delete',{confirm:true,items:items.map(i=>({dir:i.dir,file:i.file}))},'Verwijderd');if(r){sel.clear();dirty=dirty||r.restart;load()}}
+ const table=(dir,title)=>{const its=data.items.filter(i=>i.dir===dir&&keep(i)).sort((a,b)=>(a.info.name||a.file).localeCompare(b.info.name||b.file)),all=data.items.filter(i=>i.dir===dir).length;
+  const ck=h('input',{type:'checkbox',checked:its.length&&its.every(i=>sel.has(key(i))),onchange:e=>{its.forEach(i=>e.target.checked?sel.add(key(i)):sel.delete(key(i)));draw()}});
+  return h('div',{class:'card'},h('h2',null,title,h('span',{class:'badge'},all)),
+   !its.length?h('div',{class:'note',style:'padding:10px 0'},all?'Geen resultaten voor dit filter.':'Nog niets geïnstalleerd.'):h('div',{class:'scroll'},h('table',{class:'tbl'},h('thead',null,h('tr',null,h('th',{style:'width:30px'},ck),h('th',null,'Naam'),h('th',{class:'hm'},'Versie'),h('th',{class:'num hm'},'Grootte'),h('th',{class:'hm'},'Geüpload'),h('th',null,'Actief'),h('th'))),
+    h('tbody',null,its.map(it=>h('tr',{class:'rowh',style:it.enabled?'':'opacity:.6'},h('td',null,h('input',{type:'checkbox',checked:sel.has(key(it)),onchange:e=>{e.target.checked?sel.add(key(it)):sel.delete(key(it));drawBar()}})),
+     h('td',{class:'nm'},h('div',{style:'font-weight:600'},it.info.name||it.file.replace(/\.jar(\.disabled)?$/,''),' ',h('span',{class:'badge b'},LOADER[it.info.loader]||it.info.loader),it.dup?h('span',{class:'badge o',style:'margin-left:4px'},'dubbel'):null),
+      h('div',{class:'note mono ell'},it.file),it.warn.map(w=>h('div',{class:'note warn',style:'white-space:normal;display:flex;gap:6px'},ic('warn',14),w))),
+     h('td',{class:'hm'},it.info.version||'–'),h('td',{class:'num hm'},fmtB(it.size)),h('td',{class:'hm sm mute'},fmtDate(it.mtime)),
+     h('td',null,sw(it.enabled,async(v,e)=>{e.disabled=true;const r=await act('mods/toggle',{dir:it.dir,file:it.file});if(r)dirty=dirty||r.restart;load()})),
+     h('td',{class:'act'},h('a',{class:'btn sm icon ghost',href:'/api/mods/download?dir='+it.dir+'&file='+encodeURIComponent(it.file),title:'Downloaden'},ic('download',15)),btn('',{sm:true,i:'trash',label:'Verwijderen',k:'ghost',on:()=>del([it])})))))))) };
+ function drawBar(){clear(bar);const n=sel.size;if(n)bar.append(h('div',{class:'card row sb',style:'padding:12px 16px'},h('span',null,n+' geselecteerd'),h('div',{class:'row'},btn('Selectie wissen',{sm:true,on:()=>{sel.clear();draw()}}),btn('Verwijderen',{sm:true,k:'danger',i:'trash',on:()=>del(data.items.filter(i=>sel.has(key(i))))}))))}
+ function draw(){clear(list);const t=data.type;
+  if(t==='vanilla')list.append(h('div',{class:'alert e'},ic('warn'),'Deze server is Vanilla en kan geen mods of plugins laden. Installeer Paper, Purpur of Fabric via Instellingen.'));
+  else list.append(h('div',{class:'alert i'},ic('info'),t==='fabric'?'Fabric-server: gebruik Fabric-mods (map mods/). Plugins werken hier niet.':'Paper/Purpur-server: gebruik Bukkit-, Spigot- of Paper-plugins (map plugins/). Forge- en NeoForge-mods worden herkend, maar kunnen niet geladen worden: Blokwerk installeert alleen Paper, Purpur, Vanilla en Fabric.'));
+  if(dirty&&data.running)list.append(h('div',{class:'alert'},ic('warn'),'Je hebt wijzigingen aangebracht terwijl de server draait. Herstart de server om ze toe te passen.'));
+  list.append(table('plugins','Plugins'),table('mods','Mods'));drawBar()}
+ async function up(files,over){const q=files.filter(x=>/\.jar$/i.test(x.name));if(q.length<files.length)toast('Alleen .jar-bestanden worden geaccepteerd.','e');
+  for(const file of q){const pr=h('i'),msg=h('div',{class:'note'},'Uploaden…'),row=h('div',{class:'sm'},h('div',{class:'row sb'},h('b',{class:'ell'},file.name),h('span',{class:'note'},fmtB(file.size))),h('div',{class:'bar'},pr),msg);queue.prepend(row);
+   const go2=async extra=>{msg.className='note';msg.textContent='Uploaden…';try{const r=await upload('mods/upload?name='+encodeURIComponent(file.name)+(extra||''),file,p=>{pr.style.width=Math.round(p*100)+'%'});pr.style.width='100%';
+     clear(msg);msg.className='note';msg.append(h('span',{style:'color:var(--green)'},'✓ '),'Geïnstalleerd in '+r.dir+'/ als '+(r.info.name||r.file)+(r.info.version?' '+r.info.version:'')+'.',r.warn.map(w=>h('div',{class:'warn'},'⚠ '+w)));if(r.restart)dirty=true;load()}
+    catch(e){clear(msg);msg.className='note err';msg.append(e.message+' ');if(e.status===409)msg.append(btn('Overschrijven',{sm:true,on:()=>go2('&overwrite=1')}));if(e.status===422&&!/Vanilla/.test(e.message))msg.append(btn('Toch in plugins/',{sm:true,on:()=>go2('&dir=plugins')}),' ',btn('Toch in mods/',{sm:true,on:()=>go2('&dir=mods')}))}};
+   await go2(over?'&overwrite=1':'')}}
+ const fi=h('input',{type:'file',multiple:true,accept:'.jar',hidden:true,onchange:e=>{up([...e.target.files]);e.target.value=''}});
+ const dz=h('div',{class:'dz',tabindex:0,role:'button',onclick:()=>fi.click(),onkeydown:e=>{if(e.key==='Enter')fi.click()},ondragover:e=>{e.preventDefault();dz.classList.add('over')},ondragleave:()=>dz.classList.remove('over'),ondrop:e=>{e.preventDefault();dz.classList.remove('over');up([...e.dataTransfer.files])}},ic('upload',26),h('div',{style:'font-weight:600;margin-top:6px;color:var(--ink)'},'Sleep .jar-bestanden hierheen of klik om te kiezen'),h('div',{class:'note'},'Blokwerk leest het bestand en zet het automatisch in mods/ of plugins/. Meerdere bestanden tegelijk kan.'));
+ const filt=seg([['all','Alles'],['on','Actief'],['off','Uitgeschakeld'],['warn','Waarschuwingen'],['dup','Dubbel']],'all',v=>{f=v;draw()});
+ hooks.state=()=>{data.running=!!st.proc||st.status!=='offline'};
+ const el=h('div',{class:'pg'},h('div',{class:'card col'},dz,fi,queue),h('div',{class:'row'},h('div',{style:'flex:1;min-width:200px'},input({ph:'Zoek op naam of bestand',on:e=>{q=e.target.value.toLowerCase().trim();draw()}})),filt),bar,list);
+ load();return el};
+// ---- spelers
+R.players=()=>{
+ let D=null,tab='online';const body=h('div'),online=()=>st.status==='online';
+ const load=async()=>{try{D=await api('players');draw()}catch(e){toast(e.message,'e')}};
+ const pact=async(a,n,r)=>{const x=await act('player',{action:a,name:n,reason:r});if(x)toast('Opdracht verstuurd.','ok')};
+ const reasonBox=(title,a,n,verb,danger)=>{const i=input({ph:'Reden (optioneel)',ml:100});modal(title,h('div',{class:'col'},h('div',{class:'sm mute'},n),i),[{label:'Annuleren'},{label:verb,k:danger?'danger solid':'primary',on:()=>pact(a,n,i.value)}])};
+ const av=n=>h('div',{style:'width:32px;height:32px;border-radius:10px;background:var(--fill2);display:grid;place-items:center;font-weight:650;flex:none'},n.replace(/^\./,'').charAt(0).toUpperCase());
+ const uu=u=>u?h('span',{class:'mono sm mute',title:'Klik om te kopiëren',style:'cursor:pointer',onclick:()=>copy(u)},u):h('span',{class:'mute'},'onbekend');
+ const isOp=n=>D.ops.some(o=>String(o.name).toLowerCase()===n.toLowerCase());
+ const empty=t=>h('div',{class:'note',style:'padding:14px 0'},t);
+ const off=()=>online()?null:h('div',{class:'alert i',style:'margin-bottom:12px'},ic('info'),'De server is niet online. Kicken, bannen, OP en whitelist toevoegen werkt alleen als de server draait; verwijderen van lijsten kan altijd.');
+ const addBox=(ph,fn,lab)=>{const i=input({ph,ml:16});return h('div',{class:'row',style:'margin-bottom:10px'},h('div',{style:'flex:1;min-width:160px;max-width:320px'},i),btn(lab||'Toevoegen',{k:'primary',i:'plus',dis:!online(),on:()=>{if(i.value.trim()){fn(i.value.trim());i.value=''}}}))};
+ const tabs={
+  online:()=>[off(),!D.online.length?empty(online()?'Er is niemand online.':'Start de server om spelers te zien.'):h('div',{class:'scroll'},h('table',{class:'tbl'},h('thead',null,h('tr',null,h('th',null,'Speler'),h('th',{class:'hm'},'UUID'),h('th',{class:'hm'},'Online sinds'),h('th'))),
+   h('tbody',null,D.online.map(p=>h('tr',null,h('td',null,h('div',{class:'sk'},av(p.name),h('b',null,p.name),isOp(p.name)?h('span',{class:'badge b'},'OP'):null)),h('td',{class:'hm'},uu(p.uuid)),h('td',{class:'hm sm mute'},p.since?fmtDate(p.since):'–'),
+    h('td',{class:'act'},btn(isOp(p.name)?'De-OP':'OP',{sm:true,on:()=>pact(isOp(p.name)?'deop':'op',p.name)}),' ',btn('Kick',{sm:true,on:()=>reasonBox('Speler kicken','kick',p.name,'Kicken')}),' ',btn('Ban',{sm:true,k:'danger',on:()=>reasonBox('Speler bannen','ban',p.name,'Bannen',true)})))))))],
+  history:()=>!D.history.length?empty('Nog geen joins of leaves gelogd.'):h('div',{class:'scroll'},h('table',{class:'tbl'},h('thead',null,h('tr',null,h('th',null,'Tijd'),h('th',null,'Speler'),h('th',null,'Gebeurtenis'))),h('tbody',null,D.history.map(x=>h('tr',null,h('td',{class:'sm mute'},fmtDate(x.t)),h('td',null,h('b',null,x.name)),h('td',null,h('span',{class:'badge '+(x.type==='join'?'g':'')},x.type==='join'?'Gejoind':'Verlaten')))))) ),
+  seen:()=>!D.seen.length?empty('Nog geen spelers geregistreerd.'):h('div',{class:'scroll'},h('table',{class:'tbl'},h('thead',null,h('tr',null,h('th',null,'Speler'),h('th',{class:'hm'},'UUID'),h('th',null,'Laatst gezien'),h('th',{class:'num hm'},'Joins'))),h('tbody',null,D.seen.map(s=>h('tr',null,h('td',null,h('div',{class:'sk'},av(s.name),h('b',null,s.name))),h('td',{class:'hm'},uu(s.uuid)),h('td',null,s.online?h('span',{class:'badge g'},'Nu online'):s.last?fmtDate(s.last):h('span',{class:'mute'},'onbekend')),h('td',{class:'num hm'},s.joins)))))),
+  whitelist:()=>[off(),h('div',{class:'row sb',style:'margin-bottom:12px'},h('label',{class:'row',style:'gap:10px;cursor:pointer'},sw(D.whitelistOn,async v=>{await pact(v?'whitelist-on':'whitelist-off','');setTimeout(load,900)},!online()),h('b',null,'Whitelist is '+(D.whitelistOn?'aan':'uit'))),btn('Opnieuw laden',{sm:true,i:'rotate',dis:!online(),on:()=>pact('whitelist-reload','')})),
+   addBox('Spelersnaam',n=>pact('whitelist-add',n).then(()=>setTimeout(load,900))),
+   !D.whitelist.length?empty('De whitelist is leeg.'):h('table',{class:'tbl'},h('tbody',null,D.whitelist.map(w=>h('tr',null,h('td',null,h('div',{class:'sk'},av(w.name),h('b',null,w.name))),h('td',{class:'hm'},uu(w.uuid)),h('td',{class:'act'},btn('Verwijderen',{sm:true,k:'danger',on:async()=>{await pact('whitelist-remove',w.name);setTimeout(load,900)}}))))))],
+  ops:()=>[off(),addBox('Spelersnaam',n=>pact('op',n).then(()=>setTimeout(load,900)),'OP geven'),!D.ops.length?empty('Er zijn geen OP\'s.'):h('table',{class:'tbl'},h('tbody',null,D.ops.map(o=>h('tr',null,h('td',null,h('div',{class:'sk'},av(o.name),h('b',null,o.name))),h('td',null,h('span',{class:'badge b'},'Niveau '+(o.level||'?'))),h('td',{class:'hm'},uu(o.uuid)),h('td',{class:'act'},btn('OP afnemen',{sm:true,k:'danger',on:async()=>{await pact('deop',o.name);setTimeout(load,900)}}))))))],
+  bans:()=>[off(),h('h2',{style:'font-size:15px'},'Gebande spelers'),!D.banned.length?empty('Niemand is verbannen.'):h('table',{class:'tbl'},h('tbody',null,D.banned.map(b=>h('tr',null,h('td',null,h('b',null,b.name)),h('td',{class:'hm sm'},b.reason||'–'),h('td',{class:'hm sm mute'},b.created?String(b.created).slice(0,16):''),h('td',{class:'act'},btn('Unban',{sm:true,on:async()=>{await pact('pardon',b.name);setTimeout(load,900)}})))))),
+   h('h2',{style:'font-size:15px;margin-top:18px'},'Gebande IP-adressen'),!D.bannedIps.length?empty('Geen IP-bans.'):h('table',{class:'tbl'},h('tbody',null,D.bannedIps.map(b=>h('tr',null,h('td',{class:'mono'},b.ip),h('td',{class:'sm'},b.reason||'–'),h('td',{class:'act'},btn('Unban',{sm:true,on:async()=>{await pact('pardon-ip',b.ip);setTimeout(load,900)}}))))))]};
+ function draw(){if(!D)return;clear(body);body.append(h('div',{class:'card'},tabs[tab]()))}
+ hooks.players=load;hooks.state=()=>{if(D)draw()};
+ const el=h('div',{class:'pg'},h('div',{class:'row sb'},seg([['online','Online'],['history','Geschiedenis'],['seen','Gezien'],['whitelist','Whitelist'],['ops','OP\'s'],['bans','Bans']],tab,v=>{tab=v;draw()}),h('span',{class:'chip plain'},st.players.length+' online')),body);load();return el};
+// ---- code-editor met syntax highlighting
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const span=(c,t)=>'<i class="'+c+'">'+t+'</i>';
+function hlCode(t,ext){let r=esc(t);
+ const val=s=>s.replace(/(#.*$)|("(?:\\.|[^"\\])*"|'[^']*')|\b(true|false|yes|no|null|on|off)\b|(-?\b\d+(?:\.\d+)?\b)/gm,(m,c,st2,b,n)=>c?span('c',c):st2?span('s',st2):b?span('b',b):span('n',n));
+ if(ext==='json'||ext==='mcmeta'||ext==='json5')return r.replace(/("(?:\\.|[^"\\\n])*")(\s*:)?|\b(true|false|null)\b|(-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)/g,(m,s,c,k,n)=>s?(c?span('k',s)+c:span('s',s)):k?span('b',m):span('n',m));
+ if(ext==='yml'||ext==='yaml')return r.split('\n').map(l=>{if(/^\s*#/.test(l))return span('c',l);const m=/^(\s*(?:-\s+)?)([^\s#:][^:#]*?)(:)(\s.*|$)/.exec(l);return m?m[1]+span('k',m[2])+m[3]+val(m[4]):val(l)}).join('\n');
+ if(ext==='properties'||ext==='cfg'||ext==='conf'||ext==='ini'||ext==='txt'&&/=/.test(t)&&!/\n\s*\n.*\w+ \w+ \w+/.test(t))return r.split('\n').map(l=>{if(/^\s*[#!;]/.test(l))return span('c',l);const m=/^(\s*[^=:\s][^=:]*?)(\s*[=:]\s*)(.*)$/.exec(l);return m?span('k',m[1])+m[2]+span('s',m[3]):l}).join('\n');
+ if(ext==='toml')return r.split('\n').map(l=>{if(/^\s*#/.test(l))return span('c',l);if(/^\s*\[/.test(l))return span('p',l);const m=/^(\s*[\w."'\-]+)(\s*=\s*)(.*)$/.exec(l);return m?span('k',m[1])+m[2]+val(m[3]):l}).join('\n');
+ return r}
+function editorView(path,o={}){
+ const ext=(path.split('.').pop()||'').toLowerCase();let orig='',mt=0,ready=false;
+ const ta=h('textarea',{spellcheck:false,autocapitalize:'off',autocomplete:'off',autocorrect:'off','aria-label':'Bestandsinhoud '+path}),code=h('code'),pre=h('pre',{'aria-hidden':'true'},code),msg=h('div',{class:'note'}),sv=btn('Opslaan',{k:'primary',i:'check',dis:true,on:()=>save()}),rs=btn('Wijzigingen terugzetten',{i:'rotate',dis:true,on:()=>{ta.value=orig;upd()}});
+ const paint=()=>{code.innerHTML=hlCode(ta.value,ext)+'\n '};
+ const dirty=()=>ready&&ta.value!==orig;
+ function upd(){paint();sv.disabled=rs.disabled=!dirty();if(ext==='json'||ext==='mcmeta'){try{JSON.parse(ta.value);msg.className='note';msg.textContent=dirty()?'Geldige JSON':''}catch(e){msg.className='note err';msg.textContent='Ongeldige JSON: '+e.message}}else if(!msg.dataset.keep)msg.textContent=''}
+ ta.addEventListener('input',()=>{delete msg.dataset.keep;upd()});ta.addEventListener('scroll',()=>{pre.scrollTop=ta.scrollTop;pre.scrollLeft=ta.scrollLeft});
+ ta.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();ta.setRangeText('  ',ta.selectionStart,ta.selectionEnd,'end');upd()}else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();if(!sv.disabled)save()}});
+ async function save(){sv.disabled=true;try{const r=await api('files/write',{path,content:ta.value,mtime:mt});mt=r.mtime;orig=ta.value;toast('Opgeslagen. Een kopie van de vorige versie is bewaard.','ok');if(r.restart){msg.className='note warn';msg.textContent='Herstart de server om de wijziging toe te passen.';msg.dataset.keep=1}upd();o.saved&&o.saved()}catch(e){msg.className='note err';msg.textContent=e.message;sv.disabled=false}}
+ const el=h('div',{class:'col'},h('div',{class:'ed'},pre,ta),h('div',{class:'row sb'},msg,h('div',{class:'row'},rs,sv)));
+ api('files/read?path='+encodeURIComponent(path)).then(d=>{orig=d.content;mt=d.mtime;ta.value=orig;ready=true;upd()}).catch(e=>{msg.className='note err';msg.textContent=e.message;ta.disabled=true});
+ return {el,dirty};}
+// ---- bestandsbeheer
+R.files=()=>{
+ let cwd='',items=[],sel=new Set(),ed=null,res=null;const body=h('div'),upq=h('div',{class:'col'}),j=(a,b)=>a?a+'/'+b:b;
+ const load=async(p)=>{if(p!=null)cwd=p;sel.clear();res=null;try{const d=await api('files?path='+encodeURIComponent(cwd));cwd=d.path;items=d.items;draw()}catch(e){toast(e.message,'e')}};
+ const crumbs=()=>{const parts=cwd?cwd.split('/'):[],w=h('div',{class:'crumbs'},h('button',{onclick:()=>load('')},'server'));let acc='';parts.forEach(p=>{acc=j(acc,p);const a=acc;w.append(h('span',null,'/'),h('button',{onclick:()=>load(a)},p))});return w};
+ const ren=it=>{const i=input({v:it.name});modal('Hernoemen',i,[{label:'Annuleren'},{label:'Hernoemen',k:'primary',on:async()=>{const r=await act('files/rename',{path:it.path||j(cwd,it.name),name:i.value.trim()},'Hernoemd');if(r)load();else return false}}])};
+ const rm=async list=>{if(!list.length)return;if(await ask(list.length>1?list.length+' items verwijderen?':'Verwijderen?',list.map(i=>i.path||j(cwd,i.name)).join('\n')+'\n\nDe items worden naar data/trash/ verplaatst, niet definitief gewist.',{ok:'Verwijderen',danger:true})){const r=await act('files/delete',{confirm:true,paths:list.map(i=>i.path||j(cwd,i.name))},'Verplaatst naar de prullenbak');if(r)load()}};
+ const open=it=>{const p=it.path||j(cwd,it.name);if(it.dir)return load(p);if(it.locked)return toast('Dit bestand is beveiligd.','e');if(it.editable)return edit(p);location.href='/api/files/download?path='+encodeURIComponent(p)};
+ const edit=p=>{ed={p,v:editorView(p,{saved:()=>{}})};draw()};
+ async function up(files){for(const f of files){const pr=h('i'),msg=h('div',{class:'note'},'Uploaden…'),row=h('div',{class:'sm'},h('div',{class:'row sb'},h('b',{class:'ell'},f.name),h('span',{class:'note'},fmtB(f.size))),h('div',{class:'bar'},pr),msg);upq.prepend(row);
+  const go2=async ov=>{try{await upload('files/upload?path='+encodeURIComponent(cwd)+'&name='+encodeURIComponent(f.name)+(ov?'&overwrite=1':''),f,p=>{pr.style.width=Math.round(p*100)+'%'});clear(msg);msg.textContent='✓ Klaar';setTimeout(()=>row.remove(),3000);load()}catch(e){clear(msg);msg.className='note err';msg.append(e.message+' ');if(e.status===409)msg.append(btn('Overschrijven',{sm:true,on:()=>go2(true)}))}};await go2()}}
+ const fi=h('input',{type:'file',multiple:true,hidden:true,onchange:e=>{up([...e.target.files]);e.target.value=''}});
+ const srch=input({ph:'Zoek op bestandsnaam'});srch.addEventListener('keydown',async e=>{if(e.key!=='Enter')return;const v=srch.value.trim();if(!v){res=null;return draw()}const d=await act('files/search?q='+encodeURIComponent(v));if(d){res=d.items;draw()}});
+ function draw(){clear(body);
+  if(ed){body.append(h('div',{class:'card col'},h('div',{class:'row sb'},h('h2',{style:'margin:0'},ic('file',17),h('span',{class:'mono sm ell'},ed.p)),btn('Sluiten',{i:'x',on:async()=>{if(ed.v.dirty()&&!await ask('Niet-opgeslagen wijzigingen','Als je sluit, gaan je wijzigingen verloren.',{ok:'Sluiten zonder opslaan',danger:true}))return;ed=null;draw()}})),ed.v.el));return}
+  const list=res||items,showPath=!!res;
+  const ck=h('input',{type:'checkbox',checked:list.length&&list.every(i=>sel.has(i.path||j(cwd,i.name))),onchange:e=>{list.forEach(i=>{const p=i.path||j(cwd,i.name);e.target.checked&&!i.locked?sel.add(p):sel.delete(p)});draw()}});
+  body.append(h('div',{class:'card col'},h('div',{class:'row sb'},res?h('div',{class:'row'},h('b',null,list.length+' resultaten'),btn('Terug',{sm:true,on:()=>{res=null;srch.value='';draw()}})):crumbs(),
+    h('div',{class:'row'},cwd&&!res?btn('',{i:'up',label:'Omhoog',on:()=>load(cwd.split('/').slice(0,-1).join('/'))}):null,btn('Nieuwe map',{i:'fplus',on:()=>{const i=input({ph:'Mapnaam'});modal('Nieuwe map',i,[{label:'Annuleren'},{label:'Maken',k:'primary',on:async()=>{const r=await act('files/mkdir',{path:cwd,name:i.value.trim()});if(r)load();else return false}}])}}),btn('Uploaden',{k:'primary',i:'upload',on:()=>fi.click()}),btn('',{i:'rotate',label:'Vernieuwen',on:()=>load()}))),
+   h('div',{style:'max-width:380px'},srch),upq,sel.size?h('div',{class:'row sb alert i'},h('span',null,sel.size+' geselecteerd'),btn('Verwijderen',{sm:true,k:'danger',i:'trash',on:()=>rm(list.filter(i=>sel.has(i.path||j(cwd,i.name))))})):null,
+   !list.length?h('div',{class:'note',style:'padding:12px 0'},'Deze map is leeg.'):h('div',{class:'scroll'},h('table',{class:'tbl'},h('thead',null,h('tr',null,h('th',{style:'width:30px'},ck),h('th',null,'Naam'),h('th',{class:'num hm'},'Grootte'),h('th',{class:'hm'},'Gewijzigd'),h('th'))),
+    h('tbody',null,list.map(it=>{const p=it.path||j(cwd,it.name);return h('tr',{class:'rowh'},h('td',null,it.locked?ic('lock',15):h('input',{type:'checkbox',checked:sel.has(p),onchange:e=>{e.target.checked?sel.add(p):sel.delete(p);draw()}})),
+     h('td',{class:'nm'},h('a',{href:'#',style:'color:inherit;text-decoration:none;display:flex;gap:9px;align-items:center',onclick:e=>{e.preventDefault();open(it)}},ic(it.dir?'folder':'file',17),h('span',{class:'ell'},showPath?p:it.name),it.locked?h('span',{class:'badge o'},'beveiligd'):null)),
+     h('td',{class:'num hm mute'},it.dir?'–':fmtB(it.size)),h('td',{class:'hm sm mute'},fmtDate(it.mtime)),
+     h('td',{class:'act'},it.locked?null:[it.editable?btn('',{sm:true,i:'edit',label:'Bewerken',k:'ghost',on:()=>edit(p)}):null,it.dir?null:h('a',{class:'btn sm icon ghost',href:'/api/files/download?path='+encodeURIComponent(p),title:'Downloaden'},ic('download',15)),btn('',{sm:true,i:'copy',label:'Hernoemen',k:'ghost',on:()=>ren({...it,path:p})}),btn('',{sm:true,i:'trash',label:'Verwijderen',k:'ghost',on:()=>rm([{...it,path:p}])})]))})))),
+   h('div',{class:'note'},'Beveiligde bestanden (zoals .env, sleutels en wachtwoorden) zijn niet zichtbaar of bewerkbaar in de browser. Verwijderde items gaan naar data/trash/.')))}
+ const el=h('div',{class:'pg',ondragover:e=>{e.preventDefault()},ondrop:e=>{e.preventDefault();if(!ed&&e.dataTransfer.files.length)up([...e.dataTransfer.files])}},body,fi);
+ hooks.dirty=()=>ed&&ed.v.dirty();load('');return el};
+// ---- back-ups
+const TRIG={manual:'Handmatig',auto:'Automatisch','pre-update':'Voor update','pre-restore':'Voor herstel','pre-replace':'Voor wereld-vervanging',download:'Download'};
+R.backups=()=>{
+ let D={items:[]},S2=null,worlds=[];const body=h('div',{class:'col'}),sch=h('div');
+ const load=async()=>{try{[D,S2]=await Promise.all([api('backups'),api('settings')]);try{worlds=(await api('worlds')).worlds}catch{}draw()}catch(e){toast(e.message,'e')}};
+ const mk=async(scope,world)=>{const r=await act('backups/create',{scope,world},null);if(r)toast('Back-up gestart. Je krijgt een melding als hij klaar is.')};
+ const restore=r=>{if(st.status!=='offline')return toast('Stop de server voordat je een back-up herstelt.','e');ask('Back-up herstellen?','Dit zet de bestanden uit '+r.file+' terug ('+fmtDate(r.t)+').\n\nEerst wordt automatisch een veiligheidskopie van de huidige staat gemaakt. Overschreven bestanden gaan naar data/trash/.',{ok:'Herstellen',danger:true,type:'HERSTEL'}).then(v=>{if(v)act('backups/restore',{id:r.id,confirm:true})})};
+ const del=async list=>{if(await ask('Back-up verwijderen?',list.map(r=>r.file).join('\n'),{ok:'Verwijderen',danger:true})){const x=await act('backups/delete',{confirm:true,ids:list.map(r=>r.id)},'Verwijderd');if(x)load()}};
+ const saveS=async b=>{const x=await act('settings',{backup:b},'Opgeslagen');if(x)load()};
+ function draw(){clear(body);clear(sch);const b=S2.backup,ws=worlds.map(w=>[w.name,w.name]);let wsel=(worlds.find(w=>w.active)||worlds[0]||{}).name;
+  const keep=input({type:'number',v:b.keep,min:1,max:100}),every=input({type:'number',v:b.everyH,min:1,max:168}),at=input({type:'time',v:b.at});
+  body.append(h('div',{class:'g3'},h('div',{class:'tile'},h('b',null,D.items.length),h('span',null,'Back-ups')),h('div',{class:'tile'},h('b',null,fmtB(D.total)),h('span',null,'Totale grootte')),h('div',{class:'tile'},h('b',null,b.auto?(b.mode==='daily'?'Dagelijks '+b.at:'Elke '+b.everyH+' u'):'Uit'),h('span',null,'Automatisch'))),
+   D.busy?h('div',{class:'alert i'},ic('clock'),'Er is een taak bezig: '+(D.busy===true?'installatie':D.busy)+'…'):null,
+   h('div',{class:'card col'},h('h2',null,'Nieuwe back-up'),h('div',{class:'sub'},'Draait de server? Dan zet Blokwerk het opslaan even stil, schrijft alles weg en controleert het archief, zodat je wereld nooit beschadigd raakt.'),
+    h('div',{class:'row'},btn('Volledige back-up',{k:'primary',i:'archive',dis:!!D.busy,on:()=>mk('full')}),ws.length?[sel(ws,wsel,v=>{wsel=v}),btn('Alleen deze wereld',{i:'globe',dis:!!D.busy,on:()=>mk('world',wsel)})]:null)),
+   h('div',{class:'card col'},h('h2',null,'Automatische back-ups'),h('div',{class:'sub'},'Oude automatische back-ups worden opgeruimd volgens je bewaarbeleid. Handmatige back-ups blijven altijd staan.'),
+    h('div',{class:'row'},h('label',{class:'row',style:'gap:10px'},sw(b.auto,v=>saveS({auto:v})),h('b',null,'Automatisch back-ups maken'))),
+    h('div',{class:'g4'},field('Schema',sel([['daily','Dagelijks om…'],['interval','Elke x uur']],b.mode,v=>{b.mode=v;draw()})),b.mode==='daily'?field('Tijd',at):field('Interval (uren)',every),field('Wat',sel([['full','Hele server'],['world','Alleen actieve wereld']],b.scope,v=>{b.scope=v})),field('Bewaar laatste',keep,'automatische back-ups')),
+    h('div',null,btn('Opslaan',{on:()=>saveS({mode:b.mode,at:at.value||b.at,everyH:+every.value,keep:+keep.value,scope:b.scope})}))),
+   h('div',{class:'card'},h('div',{class:'row sb'},h('h2',null,'Geschiedenis'),btn('Oude opruimen…',{sm:true,i:'trash',on:()=>{const k=input({type:'number',v:5,min:1});modal('Oude back-ups opruimen',h('div',{class:'col'},h('div',{class:'sm mute'},'Bewaar de nieuwste back-ups en verwijder de rest (ook handmatige).'),field('Aantal te bewaren',k)),[{label:'Annuleren'},{label:'Opruimen',k:'danger solid',on:async()=>{const r=await act('backups/prune',{keep:+k.value,confirm:true});if(r){toast(r.deleted+' verwijderd','ok');load()}else return false}}])}})),
+    !D.items.length?h('div',{class:'note',style:'padding:12px 0'},'Er zijn nog geen back-ups.'):h('div',{class:'scroll'},h('table',{class:'tbl'},h('thead',null,h('tr',null,h('th',null,'Tijdstip'),h('th',null,'Type'),h('th',{class:'hm'},'Inhoud'),h('th',{class:'num'},'Grootte'),h('th'))),
+     h('tbody',null,D.items.map(r=>h('tr',{class:'rowh'},h('td',null,h('div',null,fmtDate(r.t)),h('div',{class:'note mono ell',style:'max-width:260px'},r.file)),h('td',null,h('span',{class:'badge '+(r.trigger==='auto'?'b':'')},TRIG[r.trigger]||r.trigger),r.label?h('div',{class:'note'},r.label):null),
+      h('td',{class:'hm sm'},r.scope==='world'?'Wereld '+r.world:'Hele server',r.mc?h('div',{class:'note'},'MC '+r.mc):null),h('td',{class:'num'},fmtB(r.size)),
+      h('td',{class:'act'},h('a',{class:'btn sm icon ghost',href:'/api/backups/download?id='+encodeURIComponent(r.id),title:'Downloaden'},ic('download',15)),btn('Herstel',{sm:true,dis:st.status!=='offline'||!!D.busy,title:st.status!=='offline'?'Stop eerst de server':'',on:()=>restore(r)}),' ',btn('',{sm:true,i:'trash',label:'Verwijderen',k:'ghost',on:()=>del([r])}))))))),
+    h('div',{class:'note',style:'margin-top:8px'},'Back-ups staan in data/backups/ als .tar.gz. Voor een update van de server wordt automatisch een back-up gemaakt.')))}
+ hooks.backups=load;hooks.job=j=>{if(j.state!=='run')load()};hooks.state=()=>{if(S2)draw()};
+ const el=h('div',{class:'pg'},body);load();return el};
+// ---- werelden
+R.worlds=()=>{
+ let D={worlds:[]};const body=h('div',{class:'col'});const load=async()=>{try{D=await api('worlds');draw()}catch(e){toast(e.message,'e')}};
+ const off=()=>st.status==='offline';
+ const replace=w=>{if(!off())return toast('Stop de server voordat je een wereld vervangt.','e');const fi=h('input',{type:'file',accept:'.tar.gz,.tgz',class:'input',style:'padding:6px 10px;height:auto'}),conf=input({ph:w.name});
+  modal('Wereld vervangen',h('div',{class:'col'},h('div',{class:'alert'},ic('warn'),'De wereld "'+w.name+'" wordt vervangen door je upload. Er wordt eerst automatisch een back-up gemaakt en de oude wereld gaat naar data/trash/.'),field('Wereld (.tar.gz, bijv. een Blokwerk-back-up)',fi),field('Typ "'+w.name+'" om te bevestigen',conf)),
+   [{label:'Annuleren'},{label:'Vervangen',k:'danger solid',on:async()=>{const f=fi.files[0];if(!f){toast('Kies eerst een bestand.','e');return false}if(conf.value!==w.name){conf.classList.add('bad');return false}
+    try{await upload('worlds/replace?world='+encodeURIComponent(w.name)+'&confirm='+encodeURIComponent(conf.value)+'&name='+encodeURIComponent(f.name),f,p=>{const b=$('#pbar');b.hidden=false;$('i',b).style.width=Math.round(p*100)+'%';if(p>=1)setTimeout(()=>b.hidden=true,800)});toast('Upload gelukt. De wereld wordt vervangen…')}catch(e){toast(e.message,'e');return false}}}])};
+ const newW=()=>{const n=input({ph:'Naam van de nieuwe wereld',ml:40}),sd=input({ph:'Seed (optioneel)',ml:60});
+  modal('Nieuwe wereld',h('div',{class:'col'},h('div',{class:'sm mute'},'De bestaande wereld blijft onaangeroerd. Blokwerk stelt de nieuwe wereld in als actief; de server maakt hem aan bij de volgende start.'),field('Naam',n),field('Seed',sd)),[{label:'Annuleren'},{label:'Aanmaken',k:'primary',on:async()=>{const r=await act('worlds/new',{name:n.value.trim(),seed:sd.value.trim()},'Nieuwe wereld ingesteld. Start de server om hem te genereren.');if(r)load();else return false}}])};
+ function draw(){clear(body);
+  body.append(h('div',{class:'row sb'},h('div',{class:'note'},'Actieve wereld volgens server.properties: ',h('b',null,D.level)),btn('Nieuwe wereld',{k:'primary',i:'plus',dis:!off(),title:off()?'':'Stop eerst de server',on:newW})));
+  if(!D.worlds.length)body.append(h('div',{class:'card note'},'Er zijn nog geen werelden. Ze verschijnen hier nadat de server voor het eerst gestart is.'));
+  for(const w of D.worlds)body.append(h('div',{class:'card col'},h('div',{class:'row sb'},h('h2',{style:'margin:0'},ic('globe',18),w.name,w.active?h('span',{class:'badge g'},'Actief'):null,w.hardcore?h('span',{class:'badge r'},'Hardcore'):null),
+   h('div',{class:'row'},btn('Back-up',{sm:true,i:'archive',on:()=>act('backups/create',{scope:'world',world:w.name},'Back-up gestart')}),btn('Downloaden',{sm:true,i:'download',on:async()=>{const r=await act('backups/create',{scope:'world',world:w.name,trigger:'download'});if(r)toast('Wereld wordt ingepakt; de download start vanzelf.')}}),btn('Vervangen',{sm:true,i:'upload',dis:!off(),on:()=>replace(w)}),!w.active?btn('Activeren',{sm:true,k:'primary',dis:!off(),on:async()=>{if(await ask('Wereld activeren?','"'+w.name+'" wordt bij de volgende start gebruikt.',{ok:'Activeren'}))act('worlds/activate',{name:w.name},'Geactiveerd').then(load)}}):null)),
+   h('div',{class:'g4'},h('div',{class:'tile'},h('b',null,fmtB(w.size)),h('span',null,'Totale grootte')),h('div',{class:'tile'},h('b',null,w.version||'–'),h('span',null,'Minecraft-versie')),h('div',{class:'tile'},h('b',{style:'font-size:16px;line-height:2'},w.lastPlayed?fmtDate(w.lastPlayed):'–'),h('span',null,'Laatst gespeeld')),
+    h('div',{class:'tile'},h('b',{class:'mono',style:'font-size:14px;line-height:2.1;cursor:pointer',title:'Kopiëren',onclick:()=>w.seed&&copy(w.seed)},w.seed||'–'),h('span',null,'Seed'))),
+   h('table',{class:'tbl'},h('thead',null,h('tr',null,h('th',null,'Dimensie'),h('th',null,'Map'),h('th',{class:'num'},'Grootte'))),h('tbody',null,w.dims.map(d=>h('tr',null,h('td',null,{overworld:'Overworld',nether:'Nether',end:'The End'}[d.id]),h('td',{class:'mono sm mute'},d.folder),h('td',{class:'num'},fmtB(d.size))))))))}
+ hooks.worlds=load;hooks.state=()=>{if(D.worlds.length)draw()};hooks.job=j=>{if(j.state!=='run')load()};
+ const el=h('div',{class:'pg'},body);load();return el};
+// ---- configuratie
+R.config=()=>{
+ let files=[],cur='server.properties',P=null,vals={},orig={},ed=null,errs={};const side=h('div',{class:'cfgnav'}),main=h('div',{class:'card col'});
+ const isDirty=()=>cur==='server.properties'?JSON.stringify(vals)!==JSON.stringify(orig):ed&&ed.v.dirty();hooks.dirty=isDirty;
+ async function pick(p){if(isDirty()&&!await ask('Niet-opgeslagen wijzigingen','Als je doorgaat, gaan je wijzigingen verloren.',{ok:'Doorgaan',danger:true}))return;cur=p;errs={};await show();drawNav()}
+ function drawNav(){clear(side);const g={};g.Server=[{path:'server.properties'}];for(const f of files)(g[f.group]=g[f.group]||[]).push(f);
+  for(const k in g){side.append(h('h4',null,k));for(const f of g[k])side.append(h('button',{class:f.path===cur?'on':'',onclick:()=>pick(f.path)},ic('file',15),h('span',{class:'ell'},f.path.replace(/^(config|plugins)\//,''))))}}
+ async function show(){clear(main);ed=null;
+  if(cur!=='server.properties'){const ex=files.find(f=>f.path===cur);if(ex&&ex.exists===false)main.append(h('div',{class:'alert i'},ic('info'),'Dit bestand bestaat nog niet. De server maakt het zelf aan (bijv. na de eerste start).'));else{main.append(h('h2',null,ic('file',17),h('span',{class:'mono sm'},cur)));ed={v:editorView(cur)};main.append(ed.v.el,h('div',{class:'note'},'Wordt gecontroleerd bij het opslaan. Bij opslaan wordt automatisch een kopie van de vorige versie bewaard.'))}return}
+  try{P=await api('config/props')}catch(e){main.append(h('div',{class:'alert e'},ic('warn'),e.message));return}vals={...P.values};orig={...P.values};drawForm()}
+ const GR=['Algemeen','Spel','Wereld','Prestaties','Beveiliging'];
+ function ctl(s){const v=vals[s.k]??'';const ch=x=>{vals[s.k]=x;upd()};
+  if(s.t==='bool')return sw(v==='true',x=>ch(String(x)));if(s.t==='enum')return sel(s.a.map(x=>[x,x]),v,ch);
+  if(s.t==='int')return input({type:'number',v,min:s.a,max:s.b,on:e=>ch(e.target.value)});if(s.t==='secret')return input({type:'password',v,ac:'new-password',on:e=>ch(e.target.value)});return input({v,on:e=>ch(e.target.value)})}
+ let sv,rs;function upd(){if(sv){sv.disabled=rs.disabled=!isDirty()}}
+ function drawForm(){clear(main);const known=new Set(P.schema.map(s=>s.k));sv=btn('Opslaan',{k:'primary',i:'check',dis:true,on:save});rs=btn('Wijzigingen terugzetten',{i:'rotate',dis:true,on:()=>{vals={...orig};errs={};drawForm()}});
+  main.append(h('div',{class:'row sb'},h('h2',null,ic('sliders',17),'server.properties'),h('div',{class:'row'},rs,sv)),st.status!=='offline'?h('div',{class:'alert i'},ic('info'),'De server draait. Wijzigingen worden pas actief na een herstart.'):null);
+  for(const g of GR){const fs=P.schema.filter(s=>s.g===g&&(s.k in vals||true));main.append(h('h3',{style:'margin:14px 0 0;font-size:14px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em'},g),h('div',null,fs.map(s=>h('div',{class:'fld'},h('b',null,s.k),h('div',{class:'d'},s.d),h('div',{class:'ctl'},ctl(s)),errs[s.k]?h('div',{class:'e'},errs[s.k]):null))))}
+  const extra=Object.keys(vals).filter(k=>!known.has(k)&&k!=='level-name');if(extra.length)main.append(h('h3',{style:'margin:14px 0 0;font-size:14px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em'},'Overig'),h('div',null,extra.map(k=>h('div',{class:'fld'},h('b',null,k),h('div',{class:'d'},'Extra instelling (niet in de standaardlijst).'),h('div',{class:'ctl'},input({v:vals[k],on:e=>{vals[k]=e.target.value;upd()}}))))));
+  main.append(h('div',{class:'note'},'Wereldnaam (level-name) beheer je op de pagina Werelden. Bij opslaan wordt een kopie van de vorige versie bewaard.'))}
+ async function save(){const ch={};for(const k in vals)if(vals[k]!==orig[k])ch[k]=vals[k];sv.disabled=true;try{const r=await api('config/props',{values:ch});toast(r.changed?'Opgeslagen'+(r.restart?'. Herstart de server om het toe te passen.':'.'):'Geen wijzigingen.','ok');errs={};await show()}catch(e){if(e.fields){errs=e.fields;toast(e.message,'e');drawForm();sv.disabled=false}else{toast(e.message,'e');sv.disabled=false}}}
+ api('config/files').then(d=>{files=d.files;drawNav()}).catch(()=>{});drawNav();show();
+ hooks.state=()=>{};return h('div',{class:'pg'},h('div',{style:'display:grid;grid-template-columns:230px minmax(0,1fr);gap:18px;align-items:start'},h('div',{class:'card',style:'padding:12px'},side),main))};
+// ---- instellingen
+R.settings=()=>{
+ let S3=null;const body=h('div',{class:'col'});const load=async()=>{try{S3=await api('settings');draw()}catch(e){toast(e.message,'e')}};
+ const put=async(o,m)=>{const r=await act('settings',o,m||'Opgeslagen');if(r)load()};
+ function draw(){clear(body);const run=st.status!=='offline',a=st.app||{};const ram=input({type:'number',v:S3.ram||4,min:1,max:128}),ra=input({type:'time',v:S3.restartAt||'04:00'}),cur=input({type:'password',ph:'Huidig wachtwoord',ac:'current-password'}),nw=input({type:'password',ph:'Nieuw wachtwoord (min. 8 tekens)',ac:'new-password'}),url=input({ph:'https://jouw-adres/update.json',v:a.updateUrl||''});
+  body.append(
+  h('div',{class:'card col'},h('h2',null,ic('power',17),'Server'),
+   h('div',{class:'row sb'},h('div',null,h('b',null,'Server starten zodra Blokwerk start'),h('div',{class:'note'},'Handig na een herstart van je computer.')),sw(S3.autoStart,v=>put({autoStart:v}))),
+   h('div',{class:'row sb'},h('div',null,h('b',null,'Automatisch herstarten na een crash'),h('div',{class:'note'},'Maximaal 3 keer in 10 minuten. Bij elke crash wordt een crashlog opgeslagen.')),sw(S3.crashRestart,v=>put({crashRestart:v}))),
+   h('div',{class:'row sb'},h('div',null,h('b',null,'Dagelijkse herstart'),h('div',{class:'note'},'Spelers krijgen 60 seconden van tevoren een bericht.')),h('div',{class:'row'},sw(!!S3.restartAt,v=>put({restartAt:v?ra.value||'04:00':''})),h('div',{style:'width:110px'},ra),btn('Opslaan',{sm:true,dis:!S3.restartAt,on:()=>put({restartAt:ra.value})}))),
+   h('div',{class:'row sb'},h('div',null,h('b',null,'Geheugen (GB)'),h('div',{class:'note'},run?'Stop de server om dit aan te passen.':'Wordt toegewezen aan Java.')),h('div',{class:'row'},h('div',{style:'width:90px'},ram),btn('Opslaan',{sm:true,dis:run,on:()=>put({ram:+ram.value})}))),
+   h('div',{class:'row sb'},h('div',null,h('b',null,'Geoptimaliseerde Java-vlaggen'),h('div',{class:'note'},'Aikar\'s flags: soepelere garbage collection.')),sw(S3.flags,v=>put({flags:v}),run))),
+  h('div',{class:'card col'},h('h2',null,ic('bolt',17),'Blokwerk zelf'),
+   h('div',{class:'row sb'},h('div',null,h('b',null,'Blokwerk starten bij inloggen'),h('div',{class:'note'},S3.platform==='linux'?'Voegt een autostart-item toe voor je bureaublad (Linux).':S3.platform==='darwin'?'Voegt een LaunchAgent toe (macOS).':'Voegt een Opstarten-item toe (Windows). Dit start Blokwerk wanneer jij inlogt, niet vóór het inloggen.')),sw(S3.boot,async(v,e)=>{e.disabled=true;await act('settings/boot',{enabled:v},v?'Blokwerk start voortaan bij inloggen':'Autostart uitgezet');load()})),
+   h('div',{class:'note'},'Wil je dat de server ook zonder ingelogde gebruiker draait? Dan is een echte systeemservice nodig; Blokwerk draait bewust alleen op jouw account.')),
+  h('div',{class:'card col'},h('h2',null,ic('rotate',17),'Updates'),
+   h('div',{class:'row sb'},h('div',null,h('b',null,'Minecraft-server updaten'),h('div',{class:'note'},st.cfg?st.cfg.type+' '+st.cfg.version+'. Er wordt eerst automatisch een back-up gemaakt. Wereld en instellingen blijven staan.':'')),btn('Update naar nieuwste',{dis:run||!!st.busy,on:async()=>{if(await ask('Server updaten?','De nieuwste versie wordt gedownload. Eerst maakt Blokwerk automatisch een volledige back-up.',{ok:'Updaten'})){const c=st.cfg;act('install',{type:c.type,version:'latest',ram:c.ram,port:c.port,max:c.max,aikar:c.flags,eula:true},'Update gestart')}}})),
+   h('div',null,h('b',null,'Blokwerk-updates'),h('div',{class:'note'},'Blokwerk '+a.version+'. '+(a.error||(a.update?'Update '+a.update.version+' beschikbaar.':a.checked?'Up-to-date.':'Nog niet gecontroleerd.')))),
+   h('div',{class:'row'},h('div',{style:'flex:1;min-width:220px'},url),btn('Opslaan',{on:()=>act('update/url',{url:url.value.trim()},'Opgeslagen')}),btn('Zoek updates',{on:()=>act('update/check',{})}),a.update?btn('Installeren',{k:'primary',dis:run,on:async()=>{if(await ask('Blokwerk updaten?','Blokwerk start daarna opnieuw op. Je wereld blijft staan.',{ok:'Installeren'}))act('update/apply',{})}}):null)),
+  h('div',{class:'card col'},h('h2',null,ic('lock',17),'Account'),h('div',{class:'note'},'Je dashboard is alleen bereikbaar vanaf deze computer en beveiligd met een wachtwoord. Sessies verlopen na 12 uur zonder activiteit.'),
+   h('div',{class:'g3'},field('Huidig wachtwoord',cur),field('Nieuw wachtwoord',nw),h('div',{style:'align-self:end'},btn('Wachtwoord wijzigen',{on:async()=>{const r=await act('auth/password',{current:cur.value,next:nw.value},'Wachtwoord gewijzigd');if(r){cur.value=nw.value=''}}})))));}
+ const el=h('div',{class:'pg'},body);hooks.state=()=>{if(S3)draw()};load();return el};
+// ---- installatiewizard (eerste keer)
+function wizard(){const root=clear($('#root'));const T=input({v:'Welkom op mijn server!'}),V=input({v:'latest'}),ty=sel([['paper','Paper (plugins, snel)'],['purpur','Purpur'],['vanilla','Vanilla'],['fabric','Fabric (mods)']],'paper',()=>{}),
+ ram=input({type:'number',v:4,min:1,max:64}),port=input({type:'number',v:25565}),max=input({type:'number',v:10,min:1}),gm=sel([['survival','Survival'],['creative','Creative'],['adventure','Adventure']],'survival',()=>{}),df=sel([['peaceful','Peaceful'],['easy','Easy'],['normal','Normal'],['hard','Hard']],'normal',()=>{});
+ const on=h('input',{type:'checkbox',class:'sw',checked:true}),pvp=h('input',{type:'checkbox',class:'sw',checked:true}),ai=h('input',{type:'checkbox',class:'sw',checked:true}),eu=h('input',{type:'checkbox',class:'sw'});
+ const go2=btn('Installeren',{k:'primary',dis:true,on:()=>act('install',{type:ty.value,version:V.value.trim()||'latest',motd:T.value,ram:ram.value,port:port.value,max:max.value,gamemode:gm.value,difficulty:df.value,online:on.checked,pvp:pvp.checked,aikar:ai.checked,eula:eu.checked})}),con=h('div',{id:'con',style:'height:180px;min-height:0'});
+ const row=(l,c)=>h('label',{class:'row sb',style:'padding:11px 0;border-top:1px solid var(--line);cursor:pointer'},h('span',null,l),c);
+ eu.onchange=()=>{go2.disabled=!eu.checked||st.status==='installing'};
+ const paintLogs=()=>{clear(con);conLogs.slice(-60).forEach(l=>con.append(h('div',{class:l.c},'['+l.t+'] '+l.m)));con.scrollTop=con.scrollHeight};hooks.log=l=>{con.append(h('div',{class:l.c},'['+l.t+'] '+l.m));con.scrollTop=con.scrollHeight};
+ hooks.state=()=>{go2.disabled=!eu.checked||st.status==='installing';$('#wst').textContent=statusText(st.status)};
+ root.append(h('div',{style:'height:100%;overflow:auto;padding:calc(30px + env(safe-area-inset-top)) 18px 40px'},h('div',{class:'wiz col'},h('div',{style:'text-align:center;padding:10px 0'},h('div',{class:'brand',style:'justify-content:center'},h('div',{class:'logo'},ic('package',17)),'Blokwerk'),h('h1',{style:'margin:6px 0;font-size:34px;letter-spacing:-.03em'},'Welkom bij Blokwerk.'),h('div',{class:'note',style:'font-size:15px'},'Kies hoe je server eruit moet zien. Blokwerk downloadt alles zelf, inclusief Java en de nieuwste versie.'),h('div',{class:'chip',id:'wst','data-s':'setup',style:'margin-top:10px'},statusText(st.status))),
+  h('div',{class:'card col'},h('div',{class:'g2'},field('Servertype',ty),field('Minecraft-versie',V)),field('Bericht in serverlijst',T),h('div',{class:'g2'},field('Geheugen (GB)',ram),field('Poort',port)),h('div',{class:'g2'},field('Max. spelers',max),field('Spelmodus',gm)),field('Moeilijkheid',df),
+   h('div',null,row('Alleen betaalde accounts',on),row('PvP aan',pvp),row('Geoptimaliseerde Java-vlaggen',ai),row('Ik ga akkoord met de Minecraft EULA (aka.ms/MinecraftEULA)',eu)),go2),con)));paintLogs()}
+init();
+</script></body></html>

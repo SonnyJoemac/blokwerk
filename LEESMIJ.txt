@@ -1,0 +1,42 @@
+BLOKWERK 4.0 - Minecraft-server met dashboard op localhost
+
+STARTEN
+  Windows : dubbelklik op Blokwerk.bat
+  macOS   : dubbelklik op Blokwerk.command (eerste keer: rechtsklik > Open)
+  Linux   : ./Blokwerk.command in een terminal
+  Overal  : node blokwerk.js
+Vereist: Node.js 18 of nieuwer (https://nodejs.org). Java wordt zo nodig automatisch gedownload.
+De browser opent op http://localhost:3000 (bij een bezette poort 3001, 3002, ...). Het dashboard is alleen bereikbaar vanaf deze computer.
+
+EERSTE KEER INLOGGEN (nieuw in 4.0)
+  Het dashboard is nu beveiligd met een wachtwoord. Bij de eerste keer vraagt de browser om een setup-code:
+  die staat in het terminalvenster van Blokwerk. Kies daarna een wachtwoord van minstens 8 tekens.
+  Wachtwoord vergeten? Stop Blokwerk en verwijder "auth" uit data/app.json; je krijgt dan een nieuwe setup-code.
+
+PAGINA'S
+  Overzicht      status, start/stop/herstart, live grafieken (1/5/30 min), waarschuwingen, crashlogs
+  Console        live console, zoeken, commandogeschiedenis (pijltjes), snelle commando's
+  Mods & Plugins slepen en neerzetten van .jar-bestanden; Blokwerk herkent zelf mods/ of plugins/
+  Spelers        online, geschiedenis, whitelist, OP's, bans
+  Bestanden      server-map beheren, bestanden bewerken met kleuren; verwijderen gaat naar data/trash/
+  Back-ups       handmatig en automatisch (.tar.gz), herstellen, bewaarbeleid
+  Werelden       grootte, seed, dimensies; back-up, downloaden, vervangen, nieuwe wereld
+  Configuratie   server.properties met uitleg en controle, plus alle andere configbestanden
+  Instellingen   geheugen, crash-herstart, dagelijkse herstart, opstarten bij inloggen, updates, wachtwoord
+
+BELANGRIJK
+  - Back-ups staan in data/backups/. Draait de server, dan wordt eerst veilig opgeslagen (save-off / save-all flush).
+  - Herstellen of vervangen kan alleen met een gestopte server en maakt eerst zelf een veiligheidskopie.
+    Overschreven of verwijderde bestanden gaan naar data/trash/ (ruim die af en toe zelf op).
+  - Voor een update van de server wordt automatisch een volledige back-up gemaakt.
+  - Beveiligde bestanden (.env, sleutels, wachtwoorden) zijn niet zichtbaar in de browser; rcon.password wordt verborgen.
+  - Crashlogs staan in data/crash-logs/. Oudere versies van bewerkte bestanden in data/file-history/.
+  - Mods: Blokwerk installeert Paper, Purpur, Vanilla en Fabric. Forge/NeoForge-mods worden herkend maar niet geladen.
+
+Bestanden staan in de map data/: server/ (wereld en instellingen), java/, backups/ en config.json.
+Verwijderen: sluit Blokwerk en verwijder de map.
+
+UPDATES
+  Vul bij Instellingen het adres van je update.json in (https). Blokwerk controleert dan zelf op nieuwe versies;
+  installeren gebeurt pas na jouw klik, met controle op SHA-256. De oude versie wordt bewaard in data/backup/.
+  Nieuwe versie publiceren: pas blokwerk.js aan, verhoog VERSION, voer "node release.js" uit en upload de map release/.
